@@ -1,0 +1,28 @@
+{
+  "n": 594,
+  "by_category": {
+    "billing": 139,
+    "technical": 135,
+    "account_access": 106,
+    "shipping": 107,
+    "product_info": 107
+  },
+  "by_urgency": {
+    "high": 129,
+    "low": 241,
+    "medium": 224
+  },
+  "by_twist": {
+    "multi_part": 109,
+    "vague": 108,
+    "wrong_assumption": 211,
+    "plain": 88,
+    "urgent_pressure": 78
+  },
+  "by_split": {
+    "heldout": 149,
+    "train": 445
+  },
+  "policies_covered": 22,
+  "median_body_words": 50
+}

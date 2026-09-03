@@ -75,6 +75,44 @@ def gen_tickets(
     console.print(table)
 
 
+@app.command("build-pairs")
+def build_pairs_cmd(
+    tickets_path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+    split: str = typer.Option("train", help="only tickets in this split become pairs"),
+    limit: int = typer.Option(0, help="cap the number of tickets (0 = all)"),
+    model: str = typer.Option("", help="generator model path; defaults to SD_BASE_MODEL"),
+    batch_size: int = typer.Option(16),
+    concurrency: int = typer.Option(8, help="parallel judge calls"),
+    min_margin: float = typer.Option(0.0, help="drop pairs whose score gap is below this"),
+    out_dir: Path = typer.Option(Path("data/prefs")),
+) -> None:
+    """PHASE 1b/c: two candidates per ticket, judged in both orders, into DPO pairs."""
+    from .data.schema import Ticket, read_jsonl
+    from .prefs.build_pairs import build_pairs, persist
+    from .prefs.judge import build_judge
+    from .serving.local import HFGenerator
+
+    s = get_settings()
+    tickets = [t for t in read_jsonl(tickets_path, Ticket) if t.split == split]
+    if limit:
+        tickets = tickets[:limit]
+    if not tickets:
+        console.print(f"[red]no tickets with split={split} in {tickets_path}")
+        raise typer.Exit(1)
+
+    gen = HFGenerator(model or s.base_model, batch_size=batch_size)
+    result = build_pairs(
+        tickets, gen, build_judge(), tokenizer=gen.tokenizer,
+        concurrency=concurrency, min_margin=min_margin,
+    )
+    persist(result, out_dir, Paths.reports)
+
+    table = Table(title=f"Phase 1 — {len(result.pairs)} usable pairs from {len(tickets)} tickets")
+    for k, v in result.stats.items():
+        table.add_row(k, json.dumps(v) if isinstance(v, (dict, list)) else str(v))
+    console.print(table)
+
+
 @app.command("show-ticket")
 def show_ticket(
     ticket_id: str = typer.Argument(...),

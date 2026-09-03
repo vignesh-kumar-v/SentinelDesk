@@ -145,7 +145,7 @@ class TicketGenerator:
         tickets: list[Ticket] = []
         dropped = 0
         seen_bodies: set[str] = set()
-        for (pol, persona, twist, urgency), res in zip(plan, results, strict=True):
+        for (pol, _persona, twist, urgency), res in zip(plan, results, strict=True):
             obj = extract_json(res.text)
             if not obj or not obj.get("subject") or not obj.get("body"):
                 dropped += 1
@@ -185,7 +185,7 @@ def split_tickets(tickets: list[Ticket], heldout_frac: float, seed: int) -> list
         twist = t.source.split(":")[1] if ":" in t.source else "plain"
         strata.setdefault((t.category, twist), []).append(t)
 
-    for key, group in strata.items():
+    for group in strata.values():
         rng.shuffle(group)
         n_held = round(len(group) * heldout_frac)
         for i, t in enumerate(group):
