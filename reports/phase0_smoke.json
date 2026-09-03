@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "loss_first": 0.6931,
+  "loss_last": 0.0004,
+  "margin_first": 0.0,
+  "margin_last": 7.8125,
+  "accuracy_last": 1.0,
+  "kl_chosen_last": 28.2486,
+  "steps": 6,
+  "wall_clock_s": 9.9,
+  "checkpoint_saved": true,
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct"
+}
