@@ -50,6 +50,49 @@ def dpo_smoke(
     console.print("[green]PASS[/] loss fell and reward margin grew on the toy batch.")
 
 
+# ------------------------------------------------------------------ phase 1
+@app.command("gen-tickets")
+def gen_tickets(
+    n: int = typer.Option(600, help="how many tickets to generate"),
+    heldout_frac: float = typer.Option(0.25, help="fraction reserved for the Phase 5 benchmark"),
+    concurrency: int = typer.Option(8),
+    out: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+) -> None:
+    """PHASE 1a: generate synthetic tickets grounded in the policy KB, then split."""
+    from .data.generate import build_generator, coverage_report, split_tickets
+    from .data.schema import dump_json, write_jsonl
+
+    gen = build_generator()
+    tickets = gen.generate(n, concurrency=concurrency)
+    tickets = split_tickets(tickets, heldout_frac, get_settings().seed)
+    write_jsonl(out, tickets)
+
+    report = coverage_report(tickets)
+    dump_json(Paths.reports / "phase1_tickets.json", report)
+    table = Table(title=f"Phase 1a — {len(tickets)} tickets -> {out}")
+    for k, v in report.items():
+        table.add_row(k, json.dumps(v) if isinstance(v, dict) else str(v))
+    console.print(table)
+
+
+@app.command("show-ticket")
+def show_ticket(
+    ticket_id: str = typer.Argument(...),
+    path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+) -> None:
+    """Print one ticket with the policy context the agent would receive."""
+    from .data.kb import render_policies, retrieve_for_ticket
+    from .data.schema import Ticket, read_jsonl
+
+    hit = next((t for t in read_jsonl(path, Ticket) if t.id == ticket_id), None)
+    if hit is None:
+        console.print(f"[red]no ticket {ticket_id} in {path}")
+        raise typer.Exit(1)
+    console.print(f"[bold]{hit.id}[/] {hit.category}/{hit.urgency} split={hit.split} {hit.source}")
+    console.print(f"[bold]Subject:[/] {hit.subject}\n{hit.body}\n")
+    console.print("[dim]" + render_policies(retrieve_for_ticket(hit.category, hit.policy_ids)) + "[/dim]")
+
+
 @app.command("kb")
 def kb() -> None:
     """Show the ground-truth policy knowledge base."""
