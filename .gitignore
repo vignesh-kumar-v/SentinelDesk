@@ -1,0 +1,33 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# secrets
+.env
+
+# model weights + generated data are large and reproducible; the manifests are not
+artifacts/**/*.safetensors
+artifacts/**/*.bin
+artifacts/**/*.pt
+artifacts/**/*.gguf
+models/
+data/raw/
+data/cache/
+
+# vllm build tree
+third_party/vllm/
+
+# os
+.DS_Store

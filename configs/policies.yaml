@@ -1,0 +1,192 @@
+# Ground-truth support policies for "Nimbus" (the fictional SaaS + hardware company
+# every ticket in this project is about).
+#
+# These exist so that "correctness" is a checkable property rather than a vibe.
+# A ticket is generated from one or more of these; the resolution agent is given
+# the same policies as context; the judge grades a response against them. Without
+# this, an LLM judge can only score tone and length, and a DPO run on tone-only
+# preferences teaches style, not accuracy.
+
+- id: BIL-01
+  category: billing
+  title: Refund window
+  body: >
+    Refunds are available within 30 days of the charge date. Requests after 30 days
+    are declined, with a one-time exception available for annual plans cancelled
+    within 45 days. Approved refunds land in 5-7 business days and always return to
+    the original payment method; we cannot refund to a different card.
+
+- id: BIL-02
+  category: billing
+  title: Duplicate charges
+  body: >
+    Duplicate charges are usually a pending authorisation, not a second capture, and
+    drop off on their own within 3 business days. If two charges have both settled,
+    support reverses the later one immediately without needing manager approval.
+
+- id: BIL-03
+  category: billing
+  title: Plan changes and proration
+  body: >
+    Upgrades take effect immediately and are prorated for the remainder of the cycle.
+    Downgrades take effect at the next renewal date; we do not issue partial refunds
+    for a mid-cycle downgrade. Customers keep paid-tier features until renewal.
+
+- id: BIL-04
+  category: billing
+  title: Failed payments and dunning
+  body: >
+    A failed payment triggers three retries over 10 days. The account stays fully
+    active during that window and is downgraded to read-only on day 11, never deleted.
+    Data is retained for 90 days after downgrade.
+
+- id: BIL-05
+  category: billing
+  title: Invoices and tax documents
+  body: >
+    Invoices are self-serve under Settings > Billing > Invoices, downloadable as PDF
+    for the last 24 months. VAT/GST numbers can be added retroactively and the invoice
+    reissued once. Support cannot alter the billed entity name on a settled invoice;
+    that requires a credit note plus reissue, which takes 2 business days.
+
+- id: TEC-01
+  category: technical
+  title: Sync failures
+  body: >
+    Sync errors with code SYNC-409 mean a conflicting edit from another device. The
+    fix is Settings > Sync > Resolve Conflicts, which lets the customer pick a winning
+    version; nothing is lost because both versions are retained for 14 days. Deleting
+    and reinstalling the app does NOT fix SYNC-409 and loses local drafts.
+
+- id: TEC-02
+  category: technical
+  title: Export and data portability
+  body: >
+    Full workspace exports are generated asynchronously and emailed as a download link
+    within 1 hour; the link expires after 72 hours. Exports are JSON plus attachments.
+    CSV export is per-table only and available on Pro and above.
+
+- id: TEC-03
+  category: technical
+  title: Supported platforms
+  body: >
+    The desktop app supports macOS 13+ and Windows 10+. There is no native Linux build;
+    the web app is the supported path on Linux. Mobile requires iOS 16+ or Android 11+.
+    We do not backport fixes to unsupported OS versions.
+
+- id: TEC-04
+  category: technical
+  title: API rate limits
+  body: >
+    The API allows 600 requests/minute per workspace on Pro and 6,000 on Enterprise.
+    Exceeding the limit returns HTTP 429 with a Retry-After header; clients should
+    honour it with exponential backoff. Limits are not raised on request for Pro; the
+    documented path is an Enterprise upgrade.
+
+- id: TEC-05
+  category: technical
+  title: Known outage handling
+  body: >
+    During a confirmed incident, support links customers to status.nimbus.example and
+    does not promise a restoration ETA beyond what the status page states. Service
+    credits for downtime are governed by the SLA and apply to Enterprise only, on request,
+    within 30 days of the incident.
+
+- id: ACC-01
+  category: account_access
+  title: Password reset
+  body: >
+    Password reset links are valid for 60 minutes and single-use. If the customer has
+    no access to the registered email, support cannot reset the password directly; the
+    account-recovery form plus proof of ownership is the only path, and it takes up to
+    3 business days.
+
+- id: ACC-02
+  category: account_access
+  title: Two-factor lockout
+  body: >
+    Customers locked out of 2FA must use a recovery code. If recovery codes are lost,
+    support disables 2FA only after identity verification through the recovery form.
+    Support must never disable 2FA based on an email request alone, regardless of urgency.
+
+- id: ACC-03
+  category: account_access
+  title: Seat and role management
+  body: >
+    Only workspace Owners can add or remove seats; Admins can change roles below their
+    own level. Removing a seat mid-cycle frees it immediately and credits the unused
+    portion to the next invoice rather than refunding it.
+
+- id: ACC-04
+  category: account_access
+  title: Account deletion
+  body: >
+    Self-serve deletion is under Settings > Account > Delete. Deletion is soft for 30
+    days and reversible by signing in during that window; after 30 days it is permanent
+    and unrecoverable. Support cannot accelerate permanent deletion below 30 days except
+    for a verified GDPR erasure request, which completes within 30 days by law.
+
+- id: SHI-01
+  category: shipping
+  title: Delivery windows
+  body: >
+    Standard shipping is 5-7 business days domestic, 10-15 international. Express is
+    2 business days domestic only. Orders placed after 2pm local ship the next business
+    day. We do not ship hardware to PO boxes.
+
+- id: SHI-02
+  category: shipping
+  title: Lost and delayed parcels
+  body: >
+    A parcel is only declared lost after 10 business days past the delivery estimate.
+    Before that, support reissues tracking and asks the customer to check with neighbours
+    and the carrier. Once declared lost we ship a replacement free; we do not refund and
+    replace for the same order.
+
+- id: SHI-03
+  category: shipping
+  title: Returns and RMA
+  body: >
+    Hardware returns are accepted within 30 days in original packaging. The customer
+    receives a prepaid label; return shipping is free domestically and customer-paid
+    internationally. Refunds are issued after the unit passes inspection, typically
+    3 business days after arrival.
+
+- id: SHI-04
+  category: shipping
+  title: Address changes
+  body: >
+    Addresses can be changed only while the order is in "preparing" status. Once it has
+    a tracking number, support must direct the customer to the carrier's redirect service;
+    we cannot reroute a dispatched parcel ourselves.
+
+- id: PRO-01
+  category: product_info
+  title: Plan feature matrix
+  body: >
+    Free includes 1 workspace and 3 seats. Pro adds unlimited workspaces, the API, CSV
+    export and priority email support. Enterprise adds SSO/SAML, audit logs, the higher
+    API limit and an SLA. SSO is Enterprise-only and is not available as a Pro add-on.
+
+- id: PRO-02
+  category: product_info
+  title: Trials
+  body: >
+    The Pro trial is 14 days, no card required, one per workspace. It cannot be extended
+    by support. Trials do not auto-convert; at expiry the workspace drops to Free with
+    all data intact.
+
+- id: PRO-03
+  category: product_info
+  title: Data residency and compliance
+  body: >
+    Data is stored in the customer's chosen region (US, EU, or AU), selected at workspace
+    creation and not changeable afterwards without a migration ticket. We are SOC 2 Type II
+    certified; the report is available under NDA. We are not HIPAA-eligible.
+
+- id: PRO-04
+  category: product_info
+  title: Roadmap questions
+  body: >
+    Support does not commit to ship dates for unreleased features. The public roadmap page
+    is the only citable source, and "planned" there means no committed date.
