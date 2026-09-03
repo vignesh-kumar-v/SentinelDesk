@@ -173,5 +173,401 @@ def doctor() -> None:
     console.print(table)
 
 
+# ------------------------------------------------------------------ phase 1 gate
+@app.command("spotcheck")
+def spotcheck(
+    n: int = typer.Option(40, help="comparisons to re-judge"),
+    second_model: str = typer.Option("kimi-k3:cloud", help="an independent frontier judge"),
+    prefs_dir: Path = typer.Option(Path("data/prefs")),
+    tickets_path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+    concurrency: int = typer.Option(4),
+) -> None:
+    """PHASE 1 gate (automated): cross-check the judge against a different frontier model."""
+    from ._io import load_judgements
+    from .data.schema import dump_json
+    from .prefs.spotcheck import build_second_judge, second_judge_agreement
+
+    judgements, tickets, candidates = load_judgements(prefs_dir, tickets_path)
+    res = second_judge_agreement(
+        judgements, tickets, candidates, build_second_judge(second_model),
+        n=n, seed=get_settings().seed, concurrency=concurrency,
+    )
+    out = res.as_dict() | {
+        "primary_judge": get_settings().judge_model,
+        "second_judge": second_model,
+    }
+    dump_json(Paths.reports / "phase1_spotcheck_second_judge.json", out)
+
+    table = Table(title=f"Phase 1 gate — {get_settings().judge_model} vs {second_model}")
+    for k in ("n", "agree", "raw_agreement", "cohens_kappa", "confusion"):
+        table.add_row(k, json.dumps(out[k]) if isinstance(out[k], dict) else str(out[k]))
+    console.print(table)
+    console.print(f"[dim]{len(out['disagreements'])} disagreements written to the report[/dim]")
+
+
+@app.command("spotcheck-human")
+def spotcheck_human(
+    n: int = typer.Option(20),
+    worksheet: Path = typer.Option(Path("reports/phase1_spotcheck_human.json")),
+    score: bool = typer.Option(False, "--score", help="score an already-filled worksheet"),
+    prefs_dir: Path = typer.Option(Path("data/prefs")),
+    tickets_path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+) -> None:
+    """PHASE 1 gate (human): write a blind worksheet, or score one you filled in.
+
+    Without --score this writes the worksheet: each row shows the ticket and two
+    responses as X and Y with the judge's label withheld and the X/Y order
+    randomised. Fill in "your_label" on each row ("X", "Y" or "tie"), then re-run
+    with --score.
+    """
+    from ._io import load_judgements
+    from .data.schema import dump_json
+    from .prefs.spotcheck import make_human_worksheet, score_human_worksheet
+
+    if score:
+        res = score_human_worksheet(worksheet)
+        out = res.as_dict() | {"judge": get_settings().judge_model, "worksheet": str(worksheet)}
+        dump_json(Paths.reports / "phase1_spotcheck_human_result.json", out)
+        table = Table(title="Phase 1 gate — human vs judge")
+        for k in ("n", "agree", "raw_agreement", "cohens_kappa", "confusion"):
+            table.add_row(k, json.dumps(out[k]) if isinstance(out[k], dict) else str(out[k]))
+        console.print(table)
+        threshold = 0.85
+        verdict = "[green]PASS[/]" if res.raw_agreement >= threshold else "[yellow]REVIEW THE RUBRIC[/]"
+        console.print(f"{verdict} blueprint gate is agreement >= {threshold:.0%}")
+        return
+
+    judgements, tickets, candidates = load_judgements(prefs_dir, tickets_path)
+    rows = make_human_worksheet(judgements, tickets, candidates, worksheet, n=n, seed=get_settings().seed)
+    console.print(f"wrote {len(rows)} blind comparisons to [bold]{worksheet}[/]")
+    console.print('fill in "your_label" on each row ("X", "Y" or "tie"), then:')
+    console.print("  sentineldesk spotcheck-human --score")
+
+
+# ------------------------------------------------------------------ phase 2
+@app.command("train-dpo")
+def train_dpo(
+    pairs: Path = typer.Option(Path("data/prefs/pairs.jsonl")),
+    out_dir: Path = typer.Option(Path("artifacts/dpo")),
+    beta: float = typer.Option(0.1),
+    lr: float = typer.Option(5e-7),
+    epochs: int = typer.Option(2),
+    batch_size: int = typer.Option(2),
+    grad_accum: int = typer.Option(8),
+    label_smoothing: float = typer.Option(0.0, help="cDPO; set to the judge's measured error rate"),
+    base_model: str = typer.Option(""),
+    dtype: str = typer.Option("float32"),
+) -> None:
+    """PHASE 2: DPO fine-tune the resolution model on the preference pairs."""
+    from .dpo.plots import plot_history
+    from .dpo.train import DPOConfig, train
+
+    cfg = DPOConfig(
+        base_model=base_model or get_settings().base_model,
+        output_dir=str(out_dir), beta=beta, learning_rate=lr, epochs=epochs,
+        batch_size=batch_size, grad_accum=grad_accum, label_smoothing=label_smoothing,
+        seed=get_settings().seed, dtype=dtype,
+    )
+    summary = train(cfg, pairs)
+    try:
+        png = plot_history(out_dir / "history.json", Paths.reports / "phase2_training.png")
+        summary["curves"] = str(png)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("could not plot curves: %s", exc)
+
+    table = Table(title="Phase 2 — DPO training")
+    for k in ("checkpoint", "optimiser_steps", "train_pairs", "eval_pairs", "wall_clock_s"):
+        table.add_row(k, str(summary[k]))
+    for label, key in (("first step", "first_step"), ("last step", "last_step"),
+                       ("first eval", "first_eval"), ("last eval", "last_eval")):
+        row = summary.get(key) or {}
+        if row:
+            table.add_row(
+                label,
+                f"loss {row['loss']:.4f}  margin {row['reward/margin']:+.3f}  "
+                f"acc {row['reward/accuracy']:.2f}  kl {row.get('kl/chosen', 0):+.3f}",
+            )
+    console.print(table)
+
+
+@app.command("plot-curves")
+def plot_curves(
+    history: Path = typer.Option(Path("artifacts/dpo/history.json")),
+    out: Path = typer.Option(Path("reports/phase2_training.png")),
+) -> None:
+    """Re-plot the DPO training curves from a saved history."""
+    from .dpo.plots import plot_history
+
+    console.print(f"wrote {plot_history(history, out)}")
+
+
+# ------------------------------------------------------------------ phase 3
+@app.command("graph-check")
+def graph_check(
+    n: int = typer.Option(10),
+    split: str = typer.Option("heldout"),
+    model: str = typer.Option("", help="checkpoint to resolve with; defaults to the base model"),
+    remote: bool = typer.Option(False, help="resolve via the OpenAI-compatible endpoint (vLLM)"),
+    tickets_path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+    llm_triage: bool = typer.Option(True),
+) -> None:
+    """PHASE 3 gate: run sample tickets through the whole graph and check the routing."""
+    from .agents.graph import build_pipeline
+    from .agents.resolution import LocalResolver, RemoteResolver
+    from .data.schema import Ticket, dump_json, read_jsonl
+    from .llm import ChatClient
+
+    s = get_settings()
+    tickets = [t for t in read_jsonl(tickets_path, Ticket) if t.split == split][:n]
+    if remote:
+        resolver = RemoteResolver(
+            ChatClient(s.resolution_base_url, s.resolution_api_key, s.resolution_model),
+            model=s.resolution_model,
+        )
+    else:
+        from .serving.local import HFGenerator
+
+        resolver = LocalResolver(HFGenerator(model or s.base_model, batch_size=1))
+
+    pipe = build_pipeline(resolver, use_llm_triage=llm_triage)
+    rows, correct = [], 0
+    for t in tickets:
+        out = pipe.run(t.id, t.subject, t.body, true_category=t.category)
+        correct += int(out.get("category") == t.category)
+        rows.append(
+            {
+                "ticket_id": t.id,
+                "true_category": t.category,
+                "triaged": out.get("category"),
+                "triage_ok": out.get("category") == t.category,
+                "triage_source": out.get("triage_source"),
+                "urgency": out.get("urgency"),
+                "confidence": out.get("confidence"),
+                "queue": out.get("queue"),
+                "escalation_reasons": out.get("escalation_reasons", []),
+                "draft_chars": len(out.get("draft", "")),
+                "nodes": [tr["node"] for tr in out.get("trace", [])],
+                "total_latency_s": next(
+                    (tr["latency_s"] for tr in out.get("trace", []) if tr["node"] == "_total"), None
+                ),
+            }
+        )
+
+    escalated = sum(1 for r in rows if r["queue"] != "auto-resolved")
+    summary = {
+        "n": len(rows),
+        "triage_accuracy": round(correct / len(rows), 3) if rows else 0.0,
+        "escalated": escalated,
+        "escalation_rate": round(escalated / len(rows), 3) if rows else 0.0,
+        "resolver": "remote" if remote else "local",
+        "rows": rows,
+    }
+    dump_json(Paths.reports / "phase3_graph_check.json", summary)
+
+    table = Table(title=f"Phase 3 — {len(rows)} tickets through the graph")
+    for col in ("ticket", "true", "triaged", "conf", "queue", "why"):
+        table.add_column(col)
+    for r in rows:
+        mark = "[green]" if r["triage_ok"] else "[red]"
+        table.add_row(
+            r["ticket_id"], r["true_category"], f"{mark}{r['triaged']}[/]",
+            f"{r['confidence']:.2f}", r["queue"],
+            (r["escalation_reasons"][0][:44] if r["escalation_reasons"] else ""),
+        )
+    console.print(table)
+    console.print(
+        f"triage accuracy [bold]{summary['triage_accuracy']:.0%}[/]  "
+        f"escalation rate [bold]{summary['escalation_rate']:.0%}[/]"
+    )
+
+
+# ------------------------------------------------------------------ phase 4
+@app.command("serve")
+def serve(
+    model: Path = typer.Option(Path("artifacts/dpo/checkpoint")),
+    port: int = typer.Option(8000),
+    name: str = typer.Option("sentineldesk-dpo"),
+    dtype: str = typer.Option("bfloat16"),
+    max_model_len: int = typer.Option(2048),
+    foreground: bool = typer.Option(True, help="block until interrupted"),
+) -> None:
+    """PHASE 4: serve a checkpoint through vLLM's OpenAI-compatible server."""
+    import time
+
+    from .serving.vllm_server import VLLMServer
+
+    server = VLLMServer(
+        model_path=str(model), served_name=name, port=port, dtype=dtype,
+        max_model_len=max_model_len,
+    )
+    server.start()
+    console.print(f"[green]serving[/] {model} at {server.base_url} as {name!r}")
+    if not foreground:
+        return
+    console.print("[dim]ctrl-c to stop[/dim]")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        server.stop()
+
+
+@app.command("bench")
+def bench(
+    n: int = typer.Option(32, help="requests per backend"),
+    max_tokens: int = typer.Option(160),
+    concurrency: int = typer.Option(8, help="for the concurrent vLLM regime"),
+    tickets_path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+    vllm_url: str = typer.Option("", help="defaults to SD_RESOLUTION_BASE_URL"),
+    vllm_model: str = typer.Option("", help="defaults to SD_RESOLUTION_MODEL"),
+    hf_model: str = typer.Option("", help="local checkpoint for the transformers/MLX arms"),
+    skip_mlx: bool = typer.Option(False),
+    skip_hf: bool = typer.Option(False),
+) -> None:
+    """PHASE 4 verification: tokens/s and latency across serving backends."""
+    from .data.schema import Ticket, dump_json, read_jsonl
+    from .llm import ChatClient
+    from .prefs.candidates import STRATEGIES, build_messages
+    from .serving.bench import bench_hf, bench_mlx, bench_openai_backend
+
+    s = get_settings()
+    tickets = [t for t in read_jsonl(tickets_path, Ticket) if t.split == "heldout"][:n]
+    prompts = [build_messages(t, STRATEGIES["grounded"]) for t in tickets]
+    results = []
+
+    url = vllm_url or s.resolution_base_url
+    model_name = vllm_model or s.resolution_model
+    client = ChatClient(url, s.resolution_api_key, model_name, max_retries=1)
+    try:
+        for c in (1, concurrency):
+            results.append(
+                bench_openai_backend(
+                    client, model_name, prompts, backend="vllm-cpu",
+                    concurrency=c, max_tokens=max_tokens,
+                ).as_dict()
+            )
+    except Exception as exc:  # noqa: BLE001
+        console.print(f"[yellow]vLLM arm skipped:[/] {str(exc)[:150]}")
+
+    local_model = hf_model or s.base_model
+    if not skip_hf:
+        from .serving.local import HFGenerator
+
+        results.append(bench_hf(HFGenerator(local_model, batch_size=8), prompts, max_tokens=max_tokens).as_dict())
+    if not skip_mlx:
+        try:
+            results.append(bench_mlx(local_model, prompts[: min(8, len(prompts))], max_tokens=max_tokens).as_dict())
+        except Exception as exc:  # noqa: BLE001
+            console.print(f"[yellow]MLX arm skipped:[/] {str(exc)[:150]}")
+
+    dump_json(Paths.reports / "phase4_serving_bench.json",
+              {"n_requests": len(prompts), "max_tokens": max_tokens, "results": results})
+
+    table = Table(title="Phase 4 — serving throughput and latency")
+    for col in ("backend", "mode", "reqs", "tok/s", "p50 s", "p95 s", "wall s", "err"):
+        table.add_column(col)
+    for r in results:
+        table.add_row(
+            r["backend"], r["mode"], str(r["n_requests"]), f"{r['throughput_tok_s']:.1f}",
+            f"{r['latency_p50_s']:.2f}", f"{r['latency_p95_s']:.2f}",
+            f"{r['wall_clock_s']:.1f}", str(r["errors"]),
+        )
+    console.print(table)
+
+
+# ------------------------------------------------------------------ phase 5
+@app.command("arena")
+def arena(
+    tuned: Path = typer.Option(Path("artifacts/dpo/checkpoint"), help="the DPO-tuned arm"),
+    base: str = typer.Option("", help="the base-prompted arm; defaults to SD_BASE_MODEL"),
+    tickets_path: Path = typer.Option(Path("data/processed/tickets.jsonl")),
+    n: int = typer.Option(0, help="cap held-out tickets (0 = all)"),
+    batch_size: int = typer.Option(16),
+    concurrency: int = typer.Option(6),
+    temperature: float = typer.Option(0.0, help="0 makes both arms deterministic"),
+    max_tokens: int = typer.Option(220),
+) -> None:
+    """PHASE 5: blind, both-orders judge-scored win-rate on held-out tickets.
+
+    Both arms get the same system prompt, the same retrieved policies and the same
+    decoding settings. The only difference between them is the weights.
+    """
+    from .data.schema import Ticket, dump_json, read_jsonl
+    from .eval.arena import ARM_BASE, ARM_TUNED, run_arena
+    from .prefs.candidates import STRATEGIES, build_messages
+    from .prefs.judge import build_judge, judge_metadata
+    from .serving.local import HFGenerator
+
+    s = get_settings()
+    tickets = [t for t in read_jsonl(tickets_path, Ticket) if t.split == "heldout"]
+    if n:
+        tickets = tickets[:n]
+    prompts = [build_messages(t, STRATEGIES["grounded"]) for t in tickets]
+
+    arms = {}
+    for arm, path in ((ARM_TUNED, str(tuned)), (ARM_BASE, base or s.base_model)):
+        console.print(f"generating [bold]{arm}[/] responses with {path}")
+        gen = HFGenerator(path, batch_size=batch_size)
+        texts = gen.generate(prompts, temperature=temperature, top_p=1.0, max_tokens=max_tokens)
+        arms[arm] = {t.id: text.strip() for t, text in zip(tickets, texts, strict=True)}
+        del gen
+
+    result = run_arena(
+        tickets, arms[ARM_TUNED], arms[ARM_BASE], build_judge(),
+        seed=s.seed, concurrency=concurrency,
+    )
+    payload = result.summary | judge_metadata() | {
+        "tuned_arm": str(tuned), "base_arm": base or s.base_model,
+        "temperature": temperature, "max_tokens": max_tokens,
+    }
+    dump_json(Paths.reports / "phase5_arena.json", payload)
+    dump_json(
+        Paths.reports / "phase5_arena_outcomes.json",
+        [
+            {"ticket_id": o.ticket_id, "category": o.category, "winner": o.winner,
+             "consistent": o.consistent, "margin": o.margin, "lengths": o.lengths}
+            for o in result.outcomes
+        ],
+    )
+    dump_json(
+        Paths.reports / "phase5_arena_responses.json",
+        {t.id: {ARM_TUNED: arms[ARM_TUNED][t.id], ARM_BASE: arms[ARM_BASE][t.id]} for t in tickets},
+    )
+
+    table = Table(title="Phase 5 — DPO-tuned vs base-prompted, blind, held-out")
+    for k in ("n", "wins_tuned", "losses_tuned", "ties", "win_rate_adjusted",
+              "win_rate_adjusted_ci95", "win_rate_decisive", "win_rate_decisive_ci95",
+              "binomial_p_vs_50pct", "significant_at_05", "order_inconsistency_rate",
+              "mean_chars", "length_ratio_tuned_over_base", "corr_win_vs_length_delta"):
+        v = payload.get(k)
+        table.add_row(k, json.dumps(v) if isinstance(v, (dict, list)) else str(v))
+    console.print(table)
+
+    cat = Table(title="by category")
+    for col in ("category", "n", "wins", "ties", "losses", "win rate (adj)"):
+        cat.add_column(col)
+    for c, row in payload.get("by_category", {}).items():
+        cat.add_row(c, str(row["n"]), str(row["wins"]), str(row["ties"]),
+                    str(row["losses"]), f"{row['win_rate_adjusted']:.0%}")
+    console.print(cat)
+
+    scores = Table(title="mean rubric scores")
+    for col in ("arm", "correctness", "completeness", "conciseness", "tone", "total"):
+        scores.add_column(col)
+    for arm, row in payload.get("mean_scores", {}).items():
+        scores.add_row(arm, *[f"{row[d]:.2f}" for d in
+                              ("correctness", "completeness", "conciseness", "tone", "total")])
+    console.print(scores)
+
+
+@app.command("report")
+def report(out: Path = typer.Option(Path("reports/RESULTS.md"))) -> None:
+    """Regenerate the results write-up from whichever phase reports exist."""
+    from .eval.report import build_report
+
+    path = build_report(Paths.reports, out)
+    console.print(f"wrote {path}")
+
+
 if __name__ == "__main__":
     app()
