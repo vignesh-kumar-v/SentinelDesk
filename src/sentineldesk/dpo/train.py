@@ -34,13 +34,22 @@ class DPOConfig:
     label_smoothing: float = 0.0
     learning_rate: float = 5e-7
     epochs: int = 2
-    batch_size: int = 2
-    grad_accum: int = 8
+    batch_size: int = 1
+    grad_accum: int = 16
     warmup_ratio: float = 0.1
     max_grad_norm: float = 1.0
     weight_decay: float = 0.0
-    max_prompt_tokens: int = 1024
-    max_response_tokens: int = 448
+    # Measured against the actual data: prompts reach 528 tokens and responses 263,
+    # so these caps truncate nothing. 256 would have cut 16% of responses, which
+    # changes their sequence log-prob and therefore the gradient - a silent bias, not
+    # a speed/quality trade.
+    max_prompt_tokens: int = 768
+    max_response_tokens: int = 320
+    # Peak memory per step, not raw arithmetic, is what governs speed here: a step
+    # that fits stays on the GPU, a step that does not thrashes the unified-memory
+    # swap. Measured 0.70 s/pair at (batch 1, chunk 64) against 5.88 s/pair at
+    # (batch 2, chunk 256) - an 8x difference from memory pressure alone.
+    logprob_chunk_size: int = 64
     eval_fraction: float = 0.1
     eval_every: int = 20
     log_every: int = 1
@@ -93,19 +102,19 @@ def _split_logps(logps: torch.Tensor, n: int) -> tuple[torch.Tensor, torch.Tenso
 
 @torch.no_grad()
 def _reference_logps(
-    model, loader: DataLoader, device: str, desc: str = "reference pass"
+    model, loader: DataLoader, device: str, desc: str = "reference pass", chunk_size: int = 64
 ) -> list[tuple[torch.Tensor, torch.Tensor]]:
     model.eval()
     out = []
     for batch in tqdm(loader, desc=desc, leave=False):
         n = int(batch["batch_size"])
-        logps = _forward_logps(model, batch, device)
+        logps = _forward_logps(model, batch, device, chunk_size)
         c, r = _split_logps(logps, n)
         out.append((c.detach().cpu(), r.detach().cpu()))
     return out
 
 
-def _forward_logps(model, batch: dict, device: str) -> torch.Tensor:
+def _forward_logps(model, batch: dict, device: str, chunk_size: int = 64) -> torch.Tensor:
     """One forward pass, scoring only the positions the loss needs.
 
     ``logits_to_keep`` restricts the LM head to the trailing window the collator
@@ -120,7 +129,7 @@ def _forward_logps(model, batch: dict, device: str) -> torch.Tensor:
         position_ids=batch["position_ids"].to(device),
         logits_to_keep=keep,
     ).logits
-    return sequence_logprobs(logits, batch["labels"][:, -keep:].to(device))
+    return sequence_logprobs(logits, batch["labels"][:, -keep:].to(device), chunk_size=chunk_size)
 
 
 def train(cfg: DPOConfig, pairs_path: Path) -> dict:
@@ -171,8 +180,12 @@ def train(cfg: DPOConfig, pairs_path: Path) -> dict:
         p.requires_grad_(False)
 
     t_ref = time.perf_counter()
-    train_ref = _reference_logps(ref, train_loader, device, "reference pass (train)")
-    eval_ref = _reference_logps(ref, eval_loader, device, "reference pass (eval)") if eval_loader else []
+    train_ref = _reference_logps(ref, train_loader, device, "reference pass (train)", cfg.logprob_chunk_size)
+    eval_ref = (
+        _reference_logps(ref, eval_loader, device, "reference pass (eval)", cfg.logprob_chunk_size)
+        if eval_loader
+        else []
+    )
     log.info("cached reference log-probs in %.1fs", time.perf_counter() - t_ref)
     if cfg.cache_reference:
         del ref
@@ -205,7 +218,7 @@ def train(cfg: DPOConfig, pairs_path: Path) -> dict:
         bar = tqdm(train_loader, desc=f"epoch {epoch + 1}/{cfg.epochs}")
         for i, batch in enumerate(bar):
             n = int(batch["batch_size"])
-            logps = _forward_logps(policy, batch, device)
+            logps = _forward_logps(policy, batch, device, cfg.logprob_chunk_size)
             pol_c, pol_r = _split_logps(logps, n)
             ref_c, ref_r = (t.to(device) for t in train_ref[i])
 
@@ -290,7 +303,7 @@ def evaluate(policy, loader: DataLoader, ref_cache, device: str, cfg: DPOConfig)
     rows = []
     for i, batch in enumerate(loader):
         n = int(batch["batch_size"])
-        logps = _forward_logps(policy, batch, device)
+        logps = _forward_logps(policy, batch, device, cfg.logprob_chunk_size)
         pol_c, pol_r = _split_logps(logps, n)
         ref_c, ref_r = (t.to(device) for t in ref_cache[i])
         stats = dpo_loss(

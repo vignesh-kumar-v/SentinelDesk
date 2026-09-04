@@ -1,0 +1,299 @@
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights:   0%|          | 1/290 [00:01<06:24,  1.33s/it]Loading weights:  96%|█████████▌| 279/290 [00:01<00:00, 267.93it/s]Loading weights: 100%|██████████| 290/290 [00:01<00:00, 199.09it/s]
+01:27:05 INFO     HFGenerator ready: Qwen/Qwen2.5-0.5B-Instruct on mps          
+                  (torch.float32)                                               
+         INFO     grounded: all 445 candidates already cached                   
+         INFO     rushed: all 445 candidates already cached                     
+         INFO     judging 36 pairs x 2 orders = 72 calls (409 already judged)   
+01:27:06 WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.2s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.9s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.9s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.6s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+01:27:07 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.1s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.5s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.9s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.1s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 1.8s          
+01:27:08 WARNING  chat attempt 3/4 failed (LLMError); retrying in 1.2s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.7s          
+01:27:09 WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.8s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 7.0s          
+01:27:10 WARNING  chat attempt 4/4 failed (LLMError); retrying in 3.4s          
+01:27:11 WARNING  judge failed for T0109: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.1s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 3.0s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.5s          
+01:27:13 WARNING  judge failed for T0096: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.1s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.7s          
+01:27:14 WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.3s          
+         WARNING  judge failed for T0066: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.4s          
+01:27:15 WARNING  chat attempt 3/4 failed (LLMError); retrying in 1.8s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.4s          
+01:27:16 WARNING  judge failed for T0197: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  judge failed for T0162: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.3s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.7s          
+01:27:17 WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.5s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.2s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.0s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 3.5s          
+01:27:18 WARNING  judge failed for T0227: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.3s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.5s          
+01:27:19 WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.7s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.2s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 3.9s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.1s          
+01:27:20 WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.0s          
+         WARNING  judge failed for T0368: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:27:21 WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.0s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.9s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.7s          
+01:27:22 WARNING  judge failed for T0428: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.8s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.9s          
+01:27:23 WARNING  judge failed for T0359: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 2.0s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.3s          
+         WARNING  judge failed for T0284: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.4s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.9s          
+01:27:25 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.7s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.9s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.0s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.7s          
+01:27:26 WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.8s          
+01:27:27 WARNING  chat attempt 4/4 failed (LLMError); retrying in 5.1s          
+01:27:28 WARNING  judge failed for T0494: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.7s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.4s          
+01:27:29 WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.1s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.6s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.8s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 3.6s          
+01:27:31 WARNING  judge failed for T0561: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.7s          
+         WARNING  judge failed for T0562: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+01:27:32 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.5s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.6s          
+         WARNING  judge failed for T0559: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+01:27:33 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.4s          
+         WARNING  judge failed for T0563: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.3s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.5s          
+01:27:34 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.3s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 3.3s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 3.9s          
+01:27:35 WARNING  chat attempt 3/4 failed (LLMError); retrying in 3.4s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.9s          
+01:27:36 WARNING  chat attempt 4/4 failed (LLMError); retrying in 6.0s          
+01:27:37 WARNING  judge failed for T0564: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.5s          
+01:27:38 WARNING  chat attempt 4/4 failed (LLMError); retrying in 5.3s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.0s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 5.2s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.8s          
+01:27:41 WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.0s          
+01:27:42 WARNING  judge failed for T0567: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.0s          
+01:27:43 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.1s          
+         WARNING  judge failed for T0569: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.4s          
+         WARNING  judge failed for T0566: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  judge failed for T0565: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.8s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.0s          
+01:27:44 WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.1s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 1.1s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.1s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 3.7s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.2s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.2s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 4.0s          
+01:27:45 WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.5s          
+01:27:46 WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.2s          
+01:27:47 WARNING  judge failed for T0570: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.4s          
+01:27:48 WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.0s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.1s          
+         WARNING  judge failed for T0572: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:27:49 WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.7s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 1.7s          
+01:27:50 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.4s          
+         WARNING  judge failed for T0573: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.4s          
+         WARNING  judge failed for T0574: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.8s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.9s          
+01:27:51 WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.0s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.2s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.8s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 4.7s          
+01:27:52 WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.0s          
+01:27:53 WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.9s          
+         WARNING  judge failed for T0576: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         INFO     judged 25/36                                                  
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.7s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 3.0s          
+01:27:54 WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.6s          
+01:27:55 WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.9s          
+01:27:56 WARNING  judge failed for T0578: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 4.9s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+         WARNING  judge failed for T0577: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.6s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 6.3s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.2s          
+01:27:57 WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.3s          
+01:27:58 WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.9s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.6s          
+01:27:59 WARNING  chat attempt 4/4 failed (LLMError); retrying in 5.5s          
+01:28:00 WARNING  judge failed for T0581: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:28:01 WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.7s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.9s          
+01:28:02 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.3s          
+         WARNING  judge failed for T0582: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:28:03 WARNING  judge failed for T0579: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.8s          
+01:28:04 WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.9s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.7s          
+         WARNING  judge failed for T0584: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.0s          
+         WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.9s          
+01:28:05 WARNING  chat attempt 2/4 failed (LLMError); retrying in 1.6s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.9s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 5.9s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.8s          
+01:28:07 WARNING  chat attempt 3/4 failed (LLMError); retrying in 0.8s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 4.0s          
+         WARNING  chat attempt 4/4 failed (LLMError); retrying in 2.0s          
+01:28:08 WARNING  chat attempt 4/4 failed (LLMError); retrying in 4.4s          
+01:28:09 WARNING  judge failed for T0590: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:28:10 WARNING  chat attempt 1/4 failed (LLMError); retrying in 0.3s          
+         WARNING  chat attempt 2/4 failed (LLMError); retrying in 0.2s          
+         WARNING  chat attempt 3/4 failed (LLMError); retrying in 2.4s          
+01:28:11 WARNING  chat attempt 4/4 failed (LLMError); retrying in 5.0s          
+         WARNING  judge failed for T0586: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:28:12 WARNING  judge failed for T0588: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:28:13 WARNING  chat attempt 4/4 failed (LLMError); retrying in 1.2s          
+01:28:14 WARNING  judge failed for T0593: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+01:28:16 WARNING  judge failed for T0591: chat failed after 4 attempts: HTTP    
+                  429: {"error":{"message":"you (vigneshkumar_5756) have reached
+                  your session usage lim                                        
+         INFO     judged 36/36                                                  
+                  Phase 1 — 344 usable pairs from 445 tickets                   
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                   ┃                                          ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ judge_model                       │ deepseek-v4-pro:cloud                    │
+│ rubric_version                    │ v1                                       │
+│ rubric_fingerprint                │ f14d5cd4800b                             │
+│ tickets                           │ 445                                      │
+│ candidates_per_ticket             │ 2                                        │
+│ judged                            │ 409                                      │
+│ order_inconsistency_rate          │ 0.1589                                   │
+│ winner_distribution               │ {"rushed": 123, "tie": 65, "grounded":   │
+│                                   │ 221}                                     │
+│ usable_pairs                      │ 344                                      │
+│ pair_yield                        │ 0.8411                                   │
+│ mean_scores_by_strategy           │ {"grounded": {"correctness": 0.489,      │
+│                                   │ "completeness": 0.292, "conciseness":    │
+│                                   │ 1.127, "tone": 0.961, "total": 2.869},   │
+│                                   │ "rushed": {"correctness": 0.417,         │
+│                                   │ "completeness": 0.049, "conciseness":    │
+│                                   │ 0.197, "tone": 0.639, "total": 1.302}}   │
+│ dimension_separation              │ {"correctness": {"mean_gap": 0.738,      │
+│                                   │ "favours_winner_frac": 0.689},           │
+│                                   │ "completeness": {"mean_gap": 0.157,      │
+│                                   │ "favours_winner_frac": 0.262},           │
+│                                   │ "conciseness": {"mean_gap": 0.605,       │
+│                                   │ "favours_winner_frac": 0.677}, "tone":   │
+│                                   │ {"mean_gap": 0.449,                      │
+│                                   │ "favours_winner_frac": 0.613},           │
+│                                   │ "_n_usable": 344,                        │
+│                                   │ "_correctness_identical_frac": 0.311,    │
+│                                   │ "_both_incorrect_frac": 0.259}           │
+│ strategy_as_chosen                │ {"rushed": 123, "grounded": 221}         │
+│ mean_margin                       │ 2.385                                    │
+│ mean_chars_chosen                 │ 606.0                                    │
+│ mean_chars_rejected               │ 915.6                                    │
+│ length_ratio_chosen_over_rejected │ 0.662                                    │
+│ mean_candidate_chars              │ {"grounded": 547.0, "rushed": 971.4}     │
+└───────────────────────────────────┴──────────────────────────────────────────┘
