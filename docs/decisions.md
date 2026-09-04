@@ -307,3 +307,45 @@ Kappa is reported rather than raw agreement alone for the usual reason: these la
 are skewed, and a labeller that always picked `grounded` would score high raw
 agreement while carrying no information. 0.586 is "moderate" on the Landis-Koch scale,
 just short of "substantial".
+
+## F7 — Both implicit rewards fall; the margin grows because the rejected side falls faster
+
+Recorded during the sweep, before the arena runs.
+
+The `lr=2e-6` run looks healthy on every headline metric: training loss 0.715 → 0.486
+at its best, eval margin −0.006 → +0.155, eval preference accuracy 0.47 → 0.62. A
+margin curve alone would call this a success.
+
+Splitting the margin into its two halves says something different:
+
+| step | loss | r_chosen | r_rejected | margin | acc |
+|---|---|---|---|---|---|
+| 0 | 0.7153 | **+0.027** | +0.067 | −0.041 | 0.38 |
+| 8 | 0.6836 | **−0.033** | −0.057 | +0.024 | 0.62 |
+| 16 | 0.6962 | **−0.240** | −0.275 | +0.035 | 0.50 |
+| 24 | 0.5831 | **−0.224** | −0.544 | +0.320 | 0.62 |
+| 32 | 0.4857 | **−0.116** | −0.644 | +0.528 | 0.81 |
+| 40 | 0.6321 | **−0.275** | −0.515 | +0.240 | 0.56 |
+
+`r_chosen` is the implicit reward on the *preferred* response, and it goes **down**,
+not up. The model becomes less likely to produce the chosen responses in absolute
+terms. The margin grows only because `r_rejected` falls faster.
+
+This is the failure mode the loss module was written to expose — the docstring there
+says a run where both rewards march downward while the margin grows is a policy
+moving away from the reference, and the margin curve reports that as success. It is a
+documented property of DPO rather than a bug in this implementation: the objective
+constrains only the *difference* of the two log-ratios, so pushing both down satisfies
+it as readily as pulling the chosen one up.
+
+**What it predicts for Phase 5.** A model that has become less likely to emit the
+preferred responses may well generate worse text overall while still ranking chosen
+above rejected more reliably. Preference accuracy on held-out *pairs* and win-rate on
+held-out *tickets* are different quantities, and this is precisely the regime where
+they can point in opposite directions. Whatever the arena returns, that is the reading
+to check first — which is why this is written down before the arena has run.
+
+Drift stays modest in absolute terms (`kl/chosen` around −2.7 against a limit of 30),
+so this is not the runaway-divergence case. It is the quieter version: the policy is
+still close to the reference, but it is moving in a direction that lowers the
+probability of good and bad responses alike.
