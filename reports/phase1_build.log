@@ -2,4 +2,4 @@
 00:04:33 INFO     HFGenerator ready: Qwen/Qwen2.5-0.5B-Instruct on mps          
                   (torch.float32)                                               
          INFO     grounded: generating 445 candidates (0 cached)                
-generate:   0%|          | 0/14 [00:00<?, ?it/s]generate:   7%|▋         | 1/14 [00:37<08:13, 37.95s/it]
+generate:   0%|          | 0/14 [00:00<?, ?it/s]generate:   7%|▋         | 1/14 [00:37<08:13, 37.95s/it]generate:  14%|█▍        | 2/14 [01:08<06:41, 33.44s/it]generate:  21%|██▏       | 3/14 [01:37<05:46, 31.51s/it]generate:  29%|██▊       | 4/14 [02:06<05:05, 30.53s/it]generate:  36%|███▌      | 5/14 [02:35<04:30, 30.06s/it]generate:  43%|████▎     | 6/14 [03:04<03:56, 29.51s/it]generate:  50%|█████     | 7/14 [03:35<03:30, 30.02s/it]generate:  57%|█████▋    | 8/14 [04:06<03:01, 30.32s/it]generate:  64%|██████▍   | 9/14 [04:35<02:30, 30.12s/it]generate:  71%|███████▏  | 10/14 [05:04<01:58, 29.74s/it]generate:  79%|███████▊  | 11/14 [05:33<01:28, 29.43s/it]generate:  86%|████████▌ | 12/14 [06:01<00:58, 29.13s/it]
