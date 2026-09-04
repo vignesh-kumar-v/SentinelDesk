@@ -1,0 +1,174 @@
+{
+  "tickets": [
+    {
+      "ticket_id": "T0000",
+      "queue": "auto-resolved",
+      "confidence": 1.0,
+      "hops": [
+        "guard_input",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_output",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 61.5311
+    },
+    {
+      "ticket_id": "T0005",
+      "queue": "human-tier-2",
+      "confidence": 1.0,
+      "hops": [
+        "guard_input",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_output",
+        "gate",
+        "escalation",
+        "_total"
+      ],
+      "total_latency_s": 55.3402
+    },
+    {
+      "ticket_id": "T0006",
+      "queue": "human-tier-2",
+      "confidence": 1.0,
+      "hops": [
+        "guard_input",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_output",
+        "gate",
+        "escalation",
+        "_total"
+      ],
+      "total_latency_s": 58.382
+    },
+    {
+      "ticket_id": "T0008",
+      "queue": "auto-resolved",
+      "confidence": 1.0,
+      "hops": [
+        "guard_input",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_output",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 60.3825
+    },
+    {
+      "ticket_id": "T0009",
+      "queue": "auto-resolved",
+      "confidence": 1.0,
+      "hops": [
+        "guard_input",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_output",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 50.318
+    }
+  ],
+  "langfuse_host": "http://localhost:3000",
+  "checkpoint": "artifacts/dpo/checkpoint",
+  "guards": true,
+  "verified_from_server": [
+    {
+      "ticket_id": "T0000",
+      "trace_id": "bd1681f726e91e9d79bb17c636ac4649",
+      "observations_in_trace": 8,
+      "hop_names": [
+        "ticket:T0000",
+        "guard_output",
+        "gate",
+        "respond",
+        "triage",
+        "resolution",
+        "retrieve",
+        "guard_input"
+      ],
+      "total_cost": 0,
+      "latency_s": 60.661
+    },
+    {
+      "ticket_id": "T0005",
+      "trace_id": "de7630a7c3dd951189a83f73612fc283",
+      "observations_in_trace": 8,
+      "hop_names": [
+        "ticket:T0005",
+        "gate",
+        "guard_output",
+        "escalate",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_input"
+      ],
+      "total_cost": 0,
+      "latency_s": 55.033
+    },
+    {
+      "ticket_id": "T0006",
+      "trace_id": "c977d5a98e2f1c28509e242cec9e8652",
+      "observations_in_trace": 8,
+      "hop_names": [
+        "ticket:T0006",
+        "escalate",
+        "guard_output",
+        "gate",
+        "resolution",
+        "triage",
+        "retrieve",
+        "guard_input"
+      ],
+      "total_cost": 0,
+      "latency_s": 57.597
+    },
+    {
+      "ticket_id": "T0008",
+      "trace_id": "179d03e69d1fc3aafddbc32fe620fda8",
+      "observations_in_trace": 8,
+      "hop_names": [
+        "ticket:T0008",
+        "guard_output",
+        "gate",
+        "respond",
+        "triage",
+        "retrieve",
+        "resolution",
+        "guard_input"
+      ],
+      "total_cost": 0,
+      "latency_s": 60.298
+    },
+    {
+      "ticket_id": "T0009",
+      "trace_id": "d3ba2cf544800d548879e517275b0b54",
+      "observations_in_trace": 8,
+      "hop_names": [
+        "ticket:T0009",
+        "gate",
+        "guard_output",
+        "respond",
+        "resolution",
+        "triage",
+        "retrieve",
+        "guard_input"
+      ],
+      "total_cost": 0,
+      "latency_s": 50.196
+    }
+  ]
+}

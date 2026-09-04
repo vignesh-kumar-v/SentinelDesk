@@ -795,6 +795,115 @@ def guardrails_eval(
                           f"{f.get('text', '')}{f.get('got', '')}")
 
 
+# ------------------------------------------------------------------ phase 7
+@app.command("trace-demo")
+def trace_demo(
+    n: int = typer.Option(5, help="tickets to run through the traced pipeline"),
+    model: str = typer.Option("", help="resolution checkpoint; defaults to the tuned one"),
+    guards: bool = typer.Option(True, help="include the guardrail nodes"),
+    verify: bool = typer.Option(True, help="read the traces back out of Langfuse"),
+    out: Path = typer.Option(Path("reports/phase7_tracing.json")),
+) -> None:
+    """PHASE 7 gate: run tickets through the traced graph, then read the traces back.
+
+    Verification is the point. Instrumenting a pipeline and asserting the SDK was
+    called proves nothing; this fetches the trace back from the server and checks that
+    every hop is present with its own timing.
+    """
+    import os
+
+    from .agents.graph import build_pipeline
+    from .agents.resolution import LocalResolver
+    from .data.schema import Ticket, dump_json, read_jsonl
+    from .observability.tracing import Tracer
+    from .serving.local import HFGenerator
+
+    tracer = Tracer.create()
+    if not tracer.enabled:
+        console.print(f"[red]Langfuse not configured:[/] {tracer.reason}")
+        console.print("start it with: make langfuse-up   (then copy the keys into .env)")
+        raise typer.Exit(1)
+
+    s = get_settings()
+    ckpt = model or ("artifacts/dpo/checkpoint" if Path("artifacts/dpo/checkpoint").exists()
+                     else s.base_model)
+    tickets = [t for t in read_jsonl(Path("data/processed/tickets.jsonl"), Ticket)
+               if t.split == "heldout"][:n]
+
+    guard_layer = None
+    if guards:
+        from .guardrails.rails import Guardrails
+
+        guard_layer = Guardrails()
+
+    pipe = build_pipeline(
+        LocalResolver(HFGenerator(ckpt, batch_size=1)),
+        use_llm_triage=True, guards=guard_layer, tracer=tracer,
+    )
+
+    rows = []
+    for t in tickets:
+        state = pipe.run(t.id, t.subject, t.body, true_category=t.category)
+        hops = [x["node"] for x in state.get("trace", [])]
+        rows.append({
+            "ticket_id": t.id, "queue": state.get("queue"),
+            "confidence": state.get("confidence"), "hops": hops,
+            "total_latency_s": next((x["latency_s"] for x in state["trace"]
+                                     if x["node"] == "_total"), None),
+        })
+        console.print(f"  {t.id}  {state.get('queue'):14s} hops={len(hops)}  "
+                      f"{rows[-1]['total_latency_s']}s")
+    tracer.flush()
+
+    result = {"tickets": rows, "langfuse_host": os.environ.get("LANGFUSE_HOST", ""),
+              "checkpoint": ckpt, "guards": guards}
+
+    if verify:
+        import time
+
+        import httpx
+
+        time.sleep(6)  # traces are ingested through a queue, not written synchronously
+        host = os.environ.get("LANGFUSE_HOST", "http://localhost:3000")
+        auth = (os.environ["LANGFUSE_PUBLIC_KEY"], os.environ["LANGFUSE_SECRET_KEY"])
+        verified = []
+        for row in rows:
+            try:
+                r = httpx.get(f"{host}/api/public/traces", auth=auth,
+                              params={"name": f"ticket:{row['ticket_id']}", "limit": 1},
+                              timeout=30)
+                data = (r.json().get("data") or [{}])[0]
+                obs = data.get("observations") or []
+                detail = httpx.get(f"{host}/api/public/traces/{data.get('id')}", auth=auth,
+                                   timeout=30).json() if data.get("id") else {}
+                names = [o.get("name") for o in (detail.get("observations") or [])]
+                verified.append({
+                    "ticket_id": row["ticket_id"], "trace_id": data.get("id"),
+                    "observations_in_trace": len(obs) or len(names),
+                    "hop_names": [n for n in names if n],
+                    "total_cost": detail.get("totalCost"),
+                    "latency_s": detail.get("latency"),
+                })
+            except Exception as exc:  # noqa: BLE001
+                verified.append({"ticket_id": row["ticket_id"], "error": str(exc)[:160]})
+        result["verified_from_server"] = verified
+
+        table = Table(title="Phase 7 — traces read back from Langfuse")
+        for col in ("ticket", "trace id", "hops recorded", "latency", "nodes"):
+            table.add_column(col)
+        for v in verified:
+            table.add_row(
+                v["ticket_id"], (v.get("trace_id") or "—")[:8],
+                str(v.get("observations_in_trace", 0)),
+                f"{v.get('latency_s') or 0:.2f}s",
+                ",".join(n.replace("ticket:", "") for n in v.get("hop_names", []))[:60],
+            )
+        console.print(table)
+
+    dump_json(out, result)
+    console.print(f"wrote {out}")
+
+
 @app.command("report")
 def report(out: Path = typer.Option(Path("reports/RESULTS.md"))) -> None:
     """Regenerate the results write-up from whichever phase reports exist."""

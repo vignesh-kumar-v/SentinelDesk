@@ -1,0 +1,8 @@
+<!-- ClickHouse defaults to listening on [::] (IPv6). Docker Desktop's default bridge
+     network here has IPv6 disabled, so every listener fails with
+     "DNS error: EAI: Address family for hostname not supported" and the container runs
+     while accepting no connections — healthy-looking process, refused port. Pinning to
+     IPv4 is the fix the error message itself suggests. -->
+<clickhouse>
+    <listen_host>0.0.0.0</listen_host>
+</clickhouse>

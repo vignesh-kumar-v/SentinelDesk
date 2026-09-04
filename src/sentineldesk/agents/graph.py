@@ -162,6 +162,7 @@ def _route(state: TicketState) -> str:
 class Pipeline:
     graph: Any
     threshold: float
+    tracer: Any = None
 
     def run(self, ticket_id: str, subject: str, body: str, **extra: Any) -> TicketState:
         t0 = time.perf_counter()
@@ -172,7 +173,34 @@ class Pipeline:
             "trace": [],
             **extra,  # type: ignore[typeddict-item]
         }
-        out = self.graph.invoke(state)
+        if self.tracer is None or not getattr(self.tracer, "enabled", False):
+            out = self.graph.invoke(state)
+        else:
+            with self.tracer.ticket(ticket_id, subject, body) as tr:
+                out = self.graph.invoke(state)
+                # Roll the per-node trace up onto the root span, so opening one ticket
+                # shows the routing decision and its reasons without drilling in.
+                tr.update_ticket(
+                    output={
+                        "queue": out.get("queue"),
+                        "final_response": out.get("final_response", "")[:2000],
+                    },
+                    metadata={
+                        "category": out.get("category"),
+                        "urgency": out.get("urgency"),
+                        "escalated": out.get("escalate"),
+                        "escalation_reasons": out.get("escalation_reasons", []),
+                        "triage_source": out.get("triage_source"),
+                        "guard_reasons": out.get("guard_reasons", []),
+                        "pii_redacted": out.get("guard_pii", {}),
+                        "resolution_model": out.get("resolution_model"),
+                    },
+                )
+                tr.score("confidence", float(out.get("confidence", 0.0)),
+                         "; ".join(out.get("escalation_reasons", [])[:2]))
+                tr.score("auto_resolved", 0.0 if out.get("escalate") else 1.0)
+            self.tracer.flush()
+
         out["trace"] = list(out.get("trace", [])) + [
             {"node": "_total", "latency_s": round(time.perf_counter() - t0, 4)}
         ]
@@ -187,6 +215,7 @@ def build_pipeline(
     triage_model: str = "",
     use_llm_triage: bool = True,
     guards=None,
+    tracer=None,
 ) -> Pipeline:
     s = get_settings()
     thr = s.escalation_confidence_threshold if threshold is None else threshold
@@ -196,17 +225,39 @@ def build_pipeline(
     if not use_llm_triage:
         triage_client = None
 
+    def traced(name: str, fn):
+        """Wrap a node so each hop is its own typed Langfuse observation."""
+        if tracer is None or not getattr(tracer, "enabled", False):
+            return fn
+
+        def wrapper(state: TicketState) -> dict:
+            with tracer.node(name) as span:
+                result = fn(state)
+                entry = (result.get("trace") or [{}])[-1]
+                if name == "resolution":
+                    span.set_usage(
+                        model=result.get("resolution_model", ""),
+                        output_tokens=int(result.get("resolution_tokens", 0) or 0),
+                    )
+                span.finish(
+                    output={k: v for k, v in result.items() if k != "trace"},
+                    **{k: v for k, v in entry.items() if k != "node"},
+                )
+                return result
+
+        return wrapper
+
     g = StateGraph(TicketState)
     if guards is not None:
-        g.add_node("guard_input", make_guard_input_node(guards))
-    g.add_node("triage", make_triage_node(triage_client, triage_model))
-    g.add_node("retrieve", make_retrieve_node())
-    g.add_node("resolution", make_resolution_node(resolver))
+        g.add_node("guard_input", traced("guard_input", make_guard_input_node(guards)))
+    g.add_node("triage", traced("triage", make_triage_node(triage_client, triage_model)))
+    g.add_node("retrieve", traced("retrieve", make_retrieve_node()))
+    g.add_node("resolution", traced("resolution", make_resolution_node(resolver)))
     if guards is not None:
-        g.add_node("guard_output", make_guard_output_node(guards))
-    g.add_node("gate", make_gate_node(thr))
-    g.add_node("respond", respond)
-    g.add_node("escalate", escalate)
+        g.add_node("guard_output", traced("guard_output", make_guard_output_node(guards)))
+    g.add_node("gate", traced("gate", make_gate_node(thr)))
+    g.add_node("respond", traced("respond", respond))
+    g.add_node("escalate", traced("escalate", escalate))
 
     if guards is not None:
         g.set_entry_point("guard_input")
@@ -224,4 +275,4 @@ def build_pipeline(
     g.add_edge("respond", END)
     g.add_edge("escalate", END)
 
-    return Pipeline(graph=g.compile(), threshold=thr)
+    return Pipeline(graph=g.compile(), threshold=thr, tracer=tracer)

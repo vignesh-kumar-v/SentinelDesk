@@ -1,0 +1,130 @@
+# Self-hosted Langfuse, so Phase 7 can be verified against a real trace view rather
+# than only asserting that the SDK was called. Self-hosted rather than cloud because it
+# needs no account and no credentials leave the machine - the traces contain customer
+# ticket text.
+#
+#   make langfuse-up      then open http://localhost:3000
+#
+# Langfuse v3+ splits storage across Postgres (transactional), ClickHouse (traces),
+# Redis (queue) and MinIO (blobs). Four stateful services makes this the heaviest thing
+# in the project, which is why it lives in its own compose file and is only up when
+# tracing is being worked on.
+services:
+  langfuse-db:
+    image: postgres:16-alpine
+    container_name: sd-langfuse-db
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+      POSTGRES_DB: langfuse
+    volumes: [langfuse-pg:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 5s
+      retries: 20
+
+  langfuse-clickhouse:
+    image: clickhouse/clickhouse-server:24.3-alpine
+    container_name: sd-langfuse-clickhouse
+    environment:
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_DB: default
+    volumes:
+      - langfuse-ch:/var/lib/clickhouse
+      # ClickHouse defaults to listening on [::]. Docker Desktop's network here has
+      # IPv6 disabled, so every listener fails with "Address family for hostname not
+      # supported" and the container runs while refusing all connections.
+      - ./clickhouse-listen.xml:/etc/clickhouse-server/config.d/listen.xml:ro
+    ulimits:
+      nofile: {soft: 262144, hard: 262144}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- 127.0.0.1:8123/ping || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+
+  langfuse-redis:
+    image: redis:7-alpine
+    container_name: sd-langfuse-redis
+    command: --requirepass langfuse
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "langfuse", "ping"]
+      interval: 5s
+      retries: 20
+
+  langfuse-minio:
+    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+    container_name: sd-langfuse-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    volumes: [langfuse-minio:/data]
+
+  # MinIO starts empty. Langfuse assumes its event bucket exists and, when it does not,
+  # ingestion fails with "Failed to upload JSON to S3" *after* the API has already
+  # accepted the batch - so the SDK looks healthy while nothing is stored. This one-shot
+  # job creates the bucket before anything writes to it.
+  langfuse-minio-init:
+    image: minio/mc:RELEASE.2024-06-12T14-34-03Z
+    container_name: sd-langfuse-minio-init
+    depends_on: [langfuse-minio]
+    entrypoint: >
+      /bin/sh -c "until mc alias set local http://langfuse-minio:9000 minio miniosecret;
+      do sleep 2; done; mc mb --ignore-existing local/langfuse; echo bucket-ready"
+    restart: "no"
+
+  langfuse-worker:
+    image: langfuse/langfuse-worker:3
+    container_name: sd-langfuse-worker
+    depends_on:
+      langfuse-db: {condition: service_healthy}
+      langfuse-clickhouse: {condition: service_healthy}
+      langfuse-minio-init: {condition: service_completed_successfully}
+    environment: &lf-env
+      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      CLICKHOUSE_URL: http://langfuse-clickhouse:8123
+      CLICKHOUSE_MIGRATION_URL: clickhouse://langfuse-clickhouse:9000
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_CLUSTER_ENABLED: "false"
+      REDIS_CONNECTION_STRING: redis://:langfuse@langfuse-redis:6379
+      LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+      LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+      LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: minio
+      LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: miniosecret
+      LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://langfuse-minio:9000
+      LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+      LANGFUSE_S3_EVENT_UPLOAD_PREFIX: "events/"
+      SALT: "sentineldesk-local-salt"
+      # Quoted deliberately: an all-hex key with leading zeros is parsed by YAML as the
+      # integer 0 and arrives as "0", failing Langfuse's 64-hex-char validation with an
+      # error that names the variable but not the cause.
+      ENCRYPTION_KEY: "825b9d778d00ae00c4cb44e513776a7a5eb3fa0cd17a23d9671e57766252a9cb"
+      NEXTAUTH_SECRET: "sentineldesk-local-secret"
+
+  langfuse-web:
+    image: langfuse/langfuse:3
+    container_name: sd-langfuse-web
+    depends_on:
+      langfuse-worker: {condition: service_started}
+    ports: ["3000:3000"]
+    environment:
+      <<: *lf-env
+      NEXTAUTH_URL: http://localhost:3000
+      # Local-only convenience: seeds an org, project, keys and user so the stack is
+      # usable without clicking through onboarding.
+      LANGFUSE_INIT_ORG_ID: sentineldesk
+      LANGFUSE_INIT_PROJECT_ID: sentineldesk
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: pk-lf-sentineldesk-local
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: sk-lf-sentineldesk-local
+      LANGFUSE_INIT_USER_EMAIL: local@sentineldesk.test
+      LANGFUSE_INIT_USER_PASSWORD: sentineldesk-local
+      LANGFUSE_INIT_USER_NAME: local
+
+volumes:
+  langfuse-pg:
+  langfuse-ch:
+  langfuse-minio:

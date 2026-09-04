@@ -9,7 +9,7 @@ VLLM_IMAGE := sentineldesk/vllm-cpu:0.11.0-pinned
         smoke tickets pairs spotcheck spotcheck-human \
         sweep train curves graph-check \
         vllm-build vllm-build-native vllm-serve vllm-stop bench \
-        arena arena-aa report all-core
+        arena arena-aa report all-core guardrails langfuse-up langfuse-down trace
 
 help: ## show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -81,6 +81,20 @@ vllm-stop: ## stop any running vLLM server
 
 bench: ## PHASE 4: tokens/s and latency, vLLM vs transformers-MPS vs MLX
 	$(SD) bench
+
+# ----------------------------------------------------------------- phase 6/7
+guardrails: ## PHASE 6 gate: score the rails against labelled adversarial cases
+	$(SD) guardrails-eval
+
+langfuse-up: ## start the self-hosted Langfuse stack (postgres/clickhouse/redis/minio)
+	docker compose -f docker/docker-compose.langfuse.yml up -d
+	@echo "Langfuse at http://localhost:3000  (local@sentineldesk.test / sentineldesk-local)"
+
+langfuse-down: ## stop Langfuse (keeps volumes)
+	docker compose -f docker/docker-compose.langfuse.yml down
+
+trace: ## PHASE 7 gate: run traced tickets, then read the traces back from the server
+	$(SD) trace-demo --n 5
 
 # ----------------------------------------------------------------- phase 5
 arena-aa: ## PHASE 5 sanity: A/A null test — same model in both arms, expect 50%
