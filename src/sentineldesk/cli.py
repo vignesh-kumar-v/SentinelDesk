@@ -389,6 +389,7 @@ def serve(
     name: str = typer.Option("sentineldesk-dpo"),
     dtype: str = typer.Option("bfloat16"),
     max_model_len: int = typer.Option(2048),
+    backend: str = typer.Option("docker", help="docker | native (native hangs on macOS)"),
     foreground: bool = typer.Option(True, help="block until interrupted"),
 ) -> None:
     """PHASE 4: serve a checkpoint through vLLM's OpenAI-compatible server."""
@@ -398,7 +399,7 @@ def serve(
 
     server = VLLMServer(
         model_path=str(model), served_name=name, port=port, dtype=dtype,
-        max_model_len=max_model_len,
+        max_model_len=max_model_len, backend=backend,
     )
     server.start()
     console.print(f"[green]serving[/] {model} at {server.base_url} as {name!r}")

@@ -2,12 +2,13 @@
 PY      := $(HOME)/Developer/venv/bin/python
 VLLM_PY := .venv-vllm/bin/python
 SD      := $(PY) -m sentineldesk.cli
+VLLM_IMAGE := sentineldesk/vllm-cpu:0.11.0-pinned
 
 .DEFAULT_GOAL := help
 .PHONY: help setup doctor test lint fmt clean \
         smoke tickets pairs spotcheck spotcheck-human \
         train curves graph-check \
-        vllm-build vllm-serve vllm-stop bench \
+        vllm-build vllm-build-native vllm-serve vllm-stop bench \
         arena report all-core
 
 help: ## show this help
@@ -61,13 +62,18 @@ graph-check: ## PHASE 3 gate: route sample tickets through the full graph
 	$(SD) graph-check --n 10
 
 # ----------------------------------------------------------------- phase 4
-vllm-build: ## build vLLM's CPU backend from source (Apple silicon)
+vllm-build: ## build the vLLM CPU image (linux/arm64) — the path that serves
+	MAX_JOBS=3 ./scripts/build_vllm_docker.sh
+	docker build -f docker/Dockerfile.vllm-pins -t $(VLLM_IMAGE) .
+
+vllm-build-native: ## build vLLM from source on macOS (compiles, then hangs — see docs)
 	./scripts/build_vllm_macos.sh
 
 vllm-serve: ## serve the DPO checkpoint via vLLM
 	$(SD) serve --model artifacts/dpo/checkpoint
 
 vllm-stop: ## stop any running vLLM server
+	-docker rm -f sentineldesk-vllm 2>/dev/null
 	-pkill -f "vllm.entrypoints.openai.api_server"
 
 bench: ## PHASE 4: tokens/s and latency, vLLM vs transformers-MPS vs MLX
