@@ -91,11 +91,24 @@ class PreferenceDataset(Dataset):
 
 @dataclass
 class DPOCollator:
-    """Pads a batch and stacks chosen+rejected into one 2B forward pass.
+    """Left-pads a batch and stacks chosen+rejected into one 2B forward pass.
 
-    Stacking matters on a single accelerator: two separate forwards of size B leave
-    the device idle between them, and the reference model has to be run over the same
-    sequences anyway.
+    Two decisions here, both about cost rather than correctness of the objective.
+
+    *Stacking* chosen and rejected into a single 2B forward keeps the device busy;
+    two separate forwards of size B leave it idle in between, and the reference model
+    has to see the same sequences anyway.
+
+    *Left* padding puts every sequence's response tokens flush against the right edge,
+    which is what makes ``logits_to_keep`` usable: the loss only needs logits at
+    response positions, and computing them for the whole ~1000-token sequence when
+    ~150 positions matter is most of the training cost at this vocabulary size.
+
+    Left padding has one trap. Position ids are inferred as 0..T-1 when not supplied,
+    which with left padding counts the pad tokens and shifts every real token's RoPE
+    position by a per-row amount. Nothing errors; the model just attends with wrong
+    positions and the log-probs are quietly wrong. They are computed from the
+    attention mask here instead.
     """
 
     pad_token_id: int
@@ -110,13 +123,26 @@ class DPOCollator:
         attention = torch.zeros((len(ids), width), dtype=torch.long)
 
         for i, (seq, lab) in enumerate(zip(ids, labels, strict=True)):
-            input_ids[i, : len(seq)] = torch.tensor(seq, dtype=torch.long)
-            label_ids[i, : len(lab)] = torch.tensor(lab, dtype=torch.long)
-            attention[i, : len(seq)] = 1
+            start = width - len(seq)
+            input_ids[i, start:] = torch.tensor(seq, dtype=torch.long)
+            label_ids[i, start:] = torch.tensor(lab, dtype=torch.long)
+            attention[i, start:] = 1
+
+        # 0..n-1 over the real tokens, pads parked at 0 (they are masked out anyway).
+        position_ids = (attention.cumsum(dim=-1) - 1).clamp(min=0)
+
+        # How many trailing positions the loss actually needs. The earliest scored
+        # label in the batch is at `first`; predicting it needs the logits at `first-1`,
+        # so the window runs from there to the end.
+        scored = label_ids != IGNORE_INDEX
+        first = int(scored.float().argmax(dim=-1).min().item())
+        logits_to_keep = min(width, width - first + 1)
 
         return {
             "input_ids": input_ids,
             "labels": label_ids,
             "attention_mask": attention,
+            "position_ids": position_ids,
             "batch_size": torch.tensor(len(batch)),
+            "logits_to_keep": torch.tensor(logits_to_keep),
         }

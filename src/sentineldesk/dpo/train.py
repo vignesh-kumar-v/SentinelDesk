@@ -46,7 +46,7 @@ class DPOConfig:
     log_every: int = 1
     seed: int = 1337
     device: str = "auto"
-    dtype: str = "float32"
+    dtype: str = "bfloat16"
     # Precomputing reference log-probs once and freeing the reference model halves
     # peak memory and removes a second forward pass from every step. Set False to
     # keep the reference model resident (needed if you ever make it non-static).
@@ -99,14 +99,28 @@ def _reference_logps(
     out = []
     for batch in tqdm(loader, desc=desc, leave=False):
         n = int(batch["batch_size"])
-        logits = model(
-            input_ids=batch["input_ids"].to(device),
-            attention_mask=batch["attention_mask"].to(device),
-        ).logits
-        logps = sequence_logprobs(logits, batch["labels"].to(device))
+        logps = _forward_logps(model, batch, device)
         c, r = _split_logps(logps, n)
         out.append((c.detach().cpu(), r.detach().cpu()))
     return out
+
+
+def _forward_logps(model, batch: dict, device: str) -> torch.Tensor:
+    """One forward pass, scoring only the positions the loss needs.
+
+    ``logits_to_keep`` restricts the LM head to the trailing window the collator
+    computed. On a 151,936-token vocabulary the head and the log-prob reduction are
+    most of the cost per step, and roughly six sevenths of a padded sequence here is
+    prompt whose logits are masked out of the loss anyway.
+    """
+    keep = int(batch["logits_to_keep"])
+    logits = model(
+        input_ids=batch["input_ids"].to(device),
+        attention_mask=batch["attention_mask"].to(device),
+        position_ids=batch["position_ids"].to(device),
+        logits_to_keep=keep,
+    ).logits
+    return sequence_logprobs(logits, batch["labels"][:, -keep:].to(device))
 
 
 def train(cfg: DPOConfig, pairs_path: Path) -> dict:
@@ -191,11 +205,7 @@ def train(cfg: DPOConfig, pairs_path: Path) -> dict:
         bar = tqdm(train_loader, desc=f"epoch {epoch + 1}/{cfg.epochs}")
         for i, batch in enumerate(bar):
             n = int(batch["batch_size"])
-            logits = policy(
-                input_ids=batch["input_ids"].to(device),
-                attention_mask=batch["attention_mask"].to(device),
-            ).logits
-            logps = sequence_logprobs(logits, batch["labels"].to(device))
+            logps = _forward_logps(policy, batch, device)
             pol_c, pol_r = _split_logps(logps, n)
             ref_c, ref_r = (t.to(device) for t in train_ref[i])
 
@@ -280,11 +290,7 @@ def evaluate(policy, loader: DataLoader, ref_cache, device: str, cfg: DPOConfig)
     rows = []
     for i, batch in enumerate(loader):
         n = int(batch["batch_size"])
-        logits = policy(
-            input_ids=batch["input_ids"].to(device),
-            attention_mask=batch["attention_mask"].to(device),
-        ).logits
-        logps = sequence_logprobs(logits, batch["labels"].to(device))
+        logps = _forward_logps(policy, batch, device)
         pol_c, pol_r = _split_logps(logps, n)
         ref_c, ref_r = (t.to(device) for t in ref_cache[i])
         stats = dpo_loss(

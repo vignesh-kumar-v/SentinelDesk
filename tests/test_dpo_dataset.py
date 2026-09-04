@@ -48,6 +48,55 @@ def test_prompt_tokens_are_masked_and_response_tokens_are_not():
     assert len(ex.chosen_ids) == len(ex.chosen_labels)
 
 
+def test_collator_left_pads_so_responses_end_flush_right():
+    """logits_to_keep only works if every response ends at the sequence's last position."""
+    ds = PreferenceDataset([_pair(), _pair(chosen="z", rejected="yyyy")], StubTokenizer())
+    batch = DPOCollator(pad_token_id=0)([ds[0], ds[1]])
+    ids, labels, attn = batch["input_ids"], batch["labels"], batch["attention_mask"]
+    for row in range(ids.shape[0]):
+        assert attn[row, -1] == 1                      # nothing padded on the right
+        assert labels[row, -1] != IGNORE_INDEX         # last position is always scored
+        pad = (attn[row] == 0).sum().item()
+        assert torch.all(attn[row, :pad] == 0)         # all padding is on the left
+        assert torch.all(attn[row, pad:] == 1)
+
+
+def test_position_ids_ignore_left_padding():
+    """Inferred positions would count the pads and silently shift every RoPE position."""
+    ds = PreferenceDataset([_pair(), _pair(prompt="abcdefgh")], StubTokenizer())
+    batch = DPOCollator(pad_token_id=0)([ds[0], ds[1]])
+    pos, attn = batch["position_ids"], batch["attention_mask"]
+    for row in range(pos.shape[0]):
+        real = pos[row][attn[row] == 1]
+        assert real.tolist() == list(range(len(real)))  # real tokens start at 0
+
+
+def test_logits_to_keep_covers_every_scored_position():
+    ds = PreferenceDataset([_pair(), _pair(chosen="zzzzzz")], StubTokenizer())
+    batch = DPOCollator(pad_token_id=0)([ds[0], ds[1]])
+    keep = int(batch["logits_to_keep"])
+    labels = batch["labels"]
+    # every scored label must fall inside the retained window
+    outside = labels[:, :-keep] if keep < labels.shape[1] else labels[:, :0]
+    assert torch.all(outside == IGNORE_INDEX)
+    assert keep <= labels.shape[1]
+
+
+def test_windowed_logprobs_equal_full_sequence_logprobs():
+    """The speed optimisation must be numerically invisible."""
+    from sentineldesk.dpo.loss import sequence_logprobs
+
+    ds = PreferenceDataset([_pair(), _pair(chosen="zzz", rejected="w")], StubTokenizer())
+    batch = DPOCollator(pad_token_id=0)([ds[0], ds[1]])
+    keep = int(batch["logits_to_keep"])
+    torch.manual_seed(11)
+    logits = torch.randn(batch["input_ids"].shape[0], batch["input_ids"].shape[1], 130)
+
+    full = sequence_logprobs(logits, batch["labels"])
+    windowed = sequence_logprobs(logits[:, -keep:, :], batch["labels"][:, -keep:])
+    assert torch.allclose(full, windowed, atol=1e-5)
+
+
 def test_chosen_and_rejected_share_the_same_prompt_prefix():
     ds = PreferenceDataset([_pair()], StubTokenizer())
     ex = ds[0]
