@@ -87,9 +87,27 @@ def run_sweep(
         best.name, best.eval_accuracy, best.eval_margin, best.drift,
     )
 
+    n_eval = int(entries[0].summary.get("eval_pairs", 0)) if entries else 0
+    # Standard error of a proportion at p=0.5. With ~34 validation pairs this is
+    # about 8.6 points, so two configurations whose eval accuracies differ by less
+    # than roughly twice that are not actually distinguishable. The selection rule is
+    # still applied — something has to be chosen — but the margin between the winner
+    # and the runner-up is reported so a reader can see whether the choice was
+    # decisive or a coin flip.
+    acc_se = (0.25 / n_eval) ** 0.5 if n_eval else 0.0
+    runner_up = ranked[1] if len(ranked) > 1 else None
+
     report = {
         "pairs": str(pairs_path),
         "drift_limit": drift_limit,
+        "eval_pairs": n_eval,
+        "eval_accuracy_standard_error": round(acc_se, 4),
+        "selected_margin_over_runner_up": (
+            round(best.eval_accuracy - runner_up.eval_accuracy, 4) if runner_up else None
+        ),
+        "selection_is_within_noise": (
+            bool(runner_up and abs(best.eval_accuracy - runner_up.eval_accuracy) < 2 * acc_se)
+        ),
         "selection_rule": (
             "highest validation preference accuracy, ties broken by margin then loss; "
             "configs exceeding the drift limit are ranked last. Selection uses a split "

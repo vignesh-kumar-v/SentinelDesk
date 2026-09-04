@@ -1,0 +1,63 @@
+{
+  "checkpoint": "artifacts/dpo/sweep/learning_rate5e-07_beta0.1/checkpoint",
+  "optimiser_steps": 60,
+  "train_pairs": 310,
+  "eval_pairs": 34,
+  "wall_clock_s": 1508.6,
+  "first_step": {
+    "loss": 0.7153124697506428,
+    "reward/chosen": 0.026514482968195807,
+    "reward/rejected": 0.06716379040153697,
+    "reward/margin": -0.040649307309649885,
+    "reward/accuracy": 0.375,
+    "logps/chosen": -220.07619285583496,
+    "logps/rejected": -301.7018965482712,
+    "kl/chosen": 0.26514482498168945,
+    "kl/rejected": 0.6716378927230835,
+    "step": 0,
+    "epoch": 0.05161290322580645,
+    "lr": 8.333333333333333e-08,
+    "grad_norm": 97.0,
+    "elapsed_s": 10.066854250006145
+  },
+  "last_step": {
+    "loss": 0.6874607602755228,
+    "reward/chosen": -0.0087573048658669,
+    "reward/rejected": -0.021931457954148453,
+    "reward/margin": 0.013174152001738548,
+    "reward/accuracy": 0.6666666666666666,
+    "logps/chosen": -118.48661104838054,
+    "logps/rejected": -300.8007227579753,
+    "kl/chosen": -0.08757305145263672,
+    "kl/rejected": -0.2193145751953125,
+    "step": 59,
+    "epoch": 3.0,
+    "lr": 4.2296043218295606e-10,
+    "grad_norm": 57.5,
+    "elapsed_s": 1490.279055040999
+  },
+  "first_eval": {
+    "loss": 0.6880484048058005,
+    "reward/chosen": 0.007011307338389623,
+    "reward/rejected": -0.004861741621211609,
+    "reward/margin": 0.011873048401492484,
+    "reward/accuracy": 0.5588235294117647,
+    "logps/chosen": -175.24778792437385,
+    "logps/rejected": -288.9056234920726,
+    "kl/chosen": 0.07011306987089269,
+    "kl/rejected": -0.04861741907456342,
+    "step": 0
+  },
+  "last_eval": {
+    "loss": 0.6971149076433742,
+    "reward/chosen": -0.012929562936358921,
+    "reward/rejected": -0.0063547694096675565,
+    "reward/margin": -0.006574792705257149,
+    "reward/accuracy": 0.4411764705882353,
+    "logps/chosen": -175.44719662385828,
+    "logps/rejected": -288.9205537683824,
+    "kl/chosen": -0.12929562961353974,
+    "kl/rejected": -0.06354769538430606,
+    "step": 59
+  }
+}

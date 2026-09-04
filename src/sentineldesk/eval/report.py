@@ -33,6 +33,7 @@ def build_report(reports_dir: Path, out: Path) -> Path:
     p1s = _load(reports_dir / "phase1_spotcheck_second_judge.json")
     p1h = _load(reports_dir / "phase1_spotcheck_human_result.json")
     p2 = _load(reports_dir / "phase2_training_summary.json")
+    p2s = _load(reports_dir / "phase2_sweep.json")
     p3 = _load(reports_dir / "phase3_graph_check.json")
     p4 = _load(reports_dir / "phase4_serving_bench.json")
     p5 = _load(reports_dir / "phase5_arena.json")
@@ -127,6 +128,35 @@ def build_report(reports_dir: Path, out: Path) -> Path:
         add("_not run_\n")
 
     add("\n## Phase 2 — DPO training\n")
+    if p2s and p2s.get("runs"):
+        add(f"Swept {len(p2s['runs'])} configurations. **Selection used a validation split of "
+            "the training pairs only — never the held-out tickets the Phase 5 arena scores.** "
+            "Choosing a checkpoint by its arena win-rate and then reporting that win-rate would "
+            "make the headline number a measure of how many configurations were tried.\n")
+        add("| config | steps | train loss | eval loss | eval acc | eval margin | drift |")
+        add("|---|---|---|---|---|---|---|")
+        for r in p2s["runs"]:
+            mark = " **(selected)**" if r["name"] == p2s.get("selected") else ""
+            flag = " ⚠over-drift" if r.get("over_drift_limit") else ""
+            add(f"| `{r['name']}`{mark} | {r['steps']} | "
+                f"{r['train_loss_first']:.4f} → {r['train_loss_last']:.4f} | "
+                f"{r['eval_loss']:.4f} | {r['eval_accuracy']:.3f} | "
+                f"{r['eval_margin']:+.4f} | {r['drift_chosen']:+.3f}{flag} |")
+        add(f"\n_{p2s.get('selection_rule', '')}_\n")
+        if p2s.get("eval_pairs"):
+            add(f"Validation split: {p2s['eval_pairs']} pairs, so the standard error on eval "
+                f"accuracy is about {p2s['eval_accuracy_standard_error']:.3f} "
+                f"({_pct(p2s['eval_accuracy_standard_error'])} points). Configurations closer "
+                "together than roughly twice that are not distinguishable by this measurement.")
+            if p2s.get("selection_is_within_noise"):
+                add(f"**The selected configuration beat the runner-up by "
+                    f"{p2s['selected_margin_over_runner_up']:+.3f} accuracy, which is inside "
+                    "that noise band.** Something has to be chosen, and the rule was fixed in "
+                    "advance, but this selection should be read as 'not clearly worse' rather "
+                    "than 'best'.")
+            else:
+                add(f"The selected configuration beat the runner-up by "
+                    f"{p2s['selected_margin_over_runner_up']:+.3f} accuracy, outside that band.")
     if p2:
         first, last = p2.get("first_step", {}), p2.get("last_step", {})
         fe, le = p2.get("first_eval", {}), p2.get("last_eval", {})
