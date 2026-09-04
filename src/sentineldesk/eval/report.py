@@ -37,6 +37,11 @@ def build_report(reports_dir: Path, out: Path) -> Path:
     p3 = _load(reports_dir / "phase3_graph_check.json")
     p4 = _load(reports_dir / "phase4_serving_bench.json")
     p5 = _load(reports_dir / "phase5_arena.json")
+    p6 = _load(reports_dir / "phase6_guardrails.json")
+    p7 = _load(reports_dir / "phase7_tracing.json")
+    p8 = _load(reports_dir / "phase8_terraform.json")
+    v1p1 = _load(reports_dir / "v1" / "phase1_pairs.json")
+    v1p5 = _load(reports_dir / "v1" / "phase5_arena.json")
 
     L: list[str] = []
     add = L.append
@@ -90,6 +95,50 @@ def build_report(reports_dir: Path, out: Path) -> Path:
             "in Phase 5 below.\n")
     else:
         add("_Phase 5 has not been run. No win-rate to report._\n")
+
+    if v1p1 and p1p and v1p5:
+        add("\n## v1 vs v2 — removing the length confound\n")
+        add("v1's result was that DPO learned brevity: 81.7% of the score gain was "
+            "conciseness, and the tuned model reproduced the training pairs' length skew "
+            "almost exactly. The cause was upstream — the contrast prompting strategy was "
+            "verbose by construction, so brevity and preference were correlated before any "
+            "training ran. v2 rebuilds the preference data with length-matched strategies "
+            "and a post-judging balancing step, and re-runs Phases 1-5 unchanged otherwise.\n")
+        add("| | v1 | v2 |")
+        add("|---|---|---|")
+        add(f"| usable pairs | {v1p1['usable_pairs']} | {p1p['usable_pairs']} |")
+        add(f"| **length ratio chosen/rejected** | **{v1p1['length_ratio_chosen_over_rejected']}** "
+            f"| **{p1p['length_ratio_chosen_over_rejected']}** |")
+        add(f"| order-inconsistency | {_pct(v1p1['order_inconsistency_rate'])} | "
+            f"{_pct(p1p['order_inconsistency_rate'])} |")
+        v1s = (v1p1.get("dimension_separation") or {})
+        v2s = (p1p.get("dimension_separation") or {})
+        for d in ("correctness", "conciseness"):
+            if d in v1s and d in v2s:
+                add(f"| {d} separation (mean gap) | {v1s[d]['mean_gap']:+.3f} | "
+                    f"{v2s[d]['mean_gap']:+.3f} |")
+        if p5 and p5.get("n"):
+            add(f"| win-rate (ties as half) | {_pct(v1p5['win_rate_adjusted'])} | "
+                f"{_pct(p5['win_rate_adjusted'])} |")
+            v1g = v1p5["mean_scores"]["dpo_tuned"]["correctness"] - \
+                  v1p5["mean_scores"]["base_prompted"]["correctness"]
+            v2g = p5["mean_scores"]["dpo_tuned"]["correctness"] - \
+                  p5["mean_scores"]["base_prompted"]["correctness"]
+            add(f"| **correctness gain over baseline** | **{v1g:+.3f}** | **{v2g:+.3f}** |")
+            add(f"| response length vs baseline | {v1p5['length_ratio_tuned_over_base']}x | "
+                f"{p5['length_ratio_tuned_over_base']}x |")
+            add(f"| corr(win, being shorter) | {v1p5['corr_win_vs_length_delta']} | "
+                f"{p5['corr_win_vs_length_delta']} |")
+        if p1p.get("length_balancing_applied"):
+            add(f"\n_v2 length balancing dropped {p1p['pairs_dropped_for_length']} pairs to move "
+                f"the ratio from {p1p['length_ratio_before_balancing']} to "
+                f"{p1p['length_ratio_after_balancing']}. The residual skew before balancing is "
+                "not the v1 artifact: the strategies are matched at generation, and what remains "
+                "is the judge preferring the more concise response within a pair, which the "
+                "rubric explicitly rewards. Balancing trades some legitimate signal for a "
+                "cleaner test of whether correctness can be learned when brevity is not a free "
+                "win._")
+        add("")
 
     add("\n## Phase 0 — DPO loop verified on a toy batch\n")
     if p0:
@@ -321,6 +370,66 @@ def build_report(reports_dir: Path, out: Path) -> Path:
         for arm, row in p5.get("mean_scores", {}).items():
             add(f"| {arm} | {row['correctness']:.2f} | {row['completeness']:.2f} | "
                 f"{row['conciseness']:.2f} | {row['tone']:.2f} | {row['total']:.2f} |")
+    else:
+        add("_not run_\n")
+
+    add("\n## Phase 6 — Guardrails\n")
+    if p6:
+        add(f"Scored against {p6['cases']} labelled cases, LLM rails "
+            f"{'on' if p6['rail_model_available'] else 'OFF'}. **Overall TPR "
+            f"{_pct(p6['overall_true_positive_rate'])} at FPR "
+            f"{_pct(p6['overall_false_positive_rate'])}.**\n")
+        add("| rail | attacks | caught | TPR | benign | wrongly blocked | FPR |")
+        add("|---|---|---|---|---|---|---|")
+        for r in p6["by_rail"]:
+            add(f"| {r['rail']} | {r['attacks']} | {r['caught']} | "
+                f"{_pct(r['true_positive_rate'])} | {r['benign']} | {r['wrongly_blocked']} | "
+                f"{_pct(r['false_positive_rate'])} |")
+        add("\nThe false-positive rate is the number worth defending. The benign half of the "
+            "set is built to be hostile to an over-eager rail — furious customers, "
+            "cancellation threats, requests support must decline, innocent uses of "
+            "\"instructions\" and \"system\". A rail that blocks everything scores a perfect "
+            "TPR and takes a support queue offline.")
+        fails = [f for r in p6["by_rail"] for f in r["failures"]]
+        if fails:
+            add("\nRemaining failures, reported rather than tuned away:")
+            for f in fails:
+                add(f"- `{f['id']}` {f['kind']}: {f.get('text', '')}{f.get('got', '')}")
+    else:
+        add("_not run_\n")
+
+    add("\n## Phase 7 — Tracing\n")
+    if p7 and p7.get("verified_from_server"):
+        v = p7["verified_from_server"]
+        ok = [x for x in v if x.get("observations_in_trace")]
+        add(f"{len(ok)}/{len(v)} tickets produced a trace that could be read back out of "
+            f"Langfuse through its public API, each with "
+            f"{ok[0]['observations_in_trace'] if ok else 0} observations.\n")
+        if ok:
+            add(f"- hops recorded: `{'`, `'.join(ok[0]['hop_names'])}`")
+            add(f"- server-side latency for that ticket: {ok[0].get('latency_s', 0):.2f}s")
+        add("\nReading the traces back is the verification. The first run reported success "
+            "from the SDK and stored nothing — Langfuse accepts a batch and uploads it "
+            "asynchronously, so a failure downstream of the acknowledgement never reaches the "
+            "client. Asserting that the SDK was called would have shipped a broken "
+            "integration with a green check.")
+    else:
+        add("_not run_\n")
+
+    add("\n## Phase 8 — Infrastructure\n")
+    if p8:
+        add(f"`terraform apply` created {p8['resources_created']} resources in "
+            f"{p8.get('region')}; `terraform destroy` removed all of them.\n")
+        add(f"- applied at `desired_count={p8['applied_with']['desired_count']}`: "
+            f"{p8['applied_with']['why']}")
+        add(f"- live state before teardown: ALB `{p8.get('alb_state')}`, ECS service "
+            f"`{p8.get('ecs_service_status')}`")
+        d8 = p8.get("destroy", {})
+        if d8:
+            conf = d8.get("independently_confirmed", {})
+            add(f"- teardown: {d8['result']} — confirmed through the AWS API "
+                f"({', '.join(f'{k}: {v}' for k, v in conf.items())}) rather than "
+                "terraform's exit code")
     else:
         add("_not run_\n")
 

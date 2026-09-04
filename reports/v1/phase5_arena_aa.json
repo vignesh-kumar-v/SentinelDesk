@@ -1,0 +1,84 @@
+{
+  "n": 30,
+  "wins_tuned": 15,
+  "losses_tuned": 8,
+  "ties": 7,
+  "win_rate_adjusted": 0.6167,
+  "win_rate_adjusted_ci95": [
+    0.4391,
+    0.7678
+  ],
+  "win_rate_decisive": 0.6522,
+  "win_rate_decisive_ci95": [
+    0.4489,
+    0.8119
+  ],
+  "binomial_p_vs_50pct": 0.21004,
+  "significant_at_05": false,
+  "order_inconsistency_rate": 0.2333,
+  "by_category": {
+    "account_access": {
+      "n": 5,
+      "wins": 3,
+      "ties": 1,
+      "losses": 1,
+      "win_rate_adjusted": 0.7
+    },
+    "billing": {
+      "n": 11,
+      "wins": 7,
+      "ties": 3,
+      "losses": 1,
+      "win_rate_adjusted": 0.7727
+    },
+    "product_info": {
+      "n": 3,
+      "wins": 1,
+      "ties": 0,
+      "losses": 2,
+      "win_rate_adjusted": 0.3333
+    },
+    "shipping": {
+      "n": 5,
+      "wins": 1,
+      "ties": 1,
+      "losses": 3,
+      "win_rate_adjusted": 0.3
+    },
+    "technical": {
+      "n": 6,
+      "wins": 3,
+      "ties": 2,
+      "losses": 1,
+      "win_rate_adjusted": 0.6667
+    }
+  },
+  "mean_scores": {
+    "dpo_tuned": {
+      "correctness": 0.567,
+      "completeness": 0.217,
+      "conciseness": 0.883,
+      "tone": 0.9,
+      "total": 2.567
+    },
+    "base_prompted": {
+      "correctness": 0.45,
+      "completeness": 0.267,
+      "conciseness": 0.933,
+      "tone": 0.85,
+      "total": 2.5
+    }
+  },
+  "mean_chars": {
+    "dpo_tuned": 598.7,
+    "base_prompted": 565.6
+  },
+  "length_ratio_tuned_over_base": 1.059,
+  "corr_win_vs_length_delta": 0.1074,
+  "shown_first_distribution": {
+    "base_prompted": 18,
+    "dpo_tuned": 12
+  },
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "note": "A/A null test \u2014 same weights both arms"
+}

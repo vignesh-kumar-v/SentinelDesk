@@ -1,0 +1,224 @@
+{
+  "n": 10,
+  "triage_accuracy": 1.0,
+  "escalated": 2,
+  "escalation_rate": 0.2,
+  "resolver": "remote",
+  "rows": [
+    {
+      "ticket_id": "T0000",
+      "true_category": "billing",
+      "triaged": "billing",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "high",
+      "confidence": 1.0,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 786,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 45.0854
+    },
+    {
+      "ticket_id": "T0005",
+      "true_category": "technical",
+      "triaged": "technical",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "medium",
+      "confidence": 1.0,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 757,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 37.5865
+    },
+    {
+      "ticket_id": "T0006",
+      "true_category": "technical",
+      "triaged": "technical",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "medium",
+      "confidence": 1.0,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 1008,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 38.0473
+    },
+    {
+      "ticket_id": "T0008",
+      "true_category": "technical",
+      "triaged": "technical",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "high",
+      "confidence": 0.5,
+      "queue": "human-tier-2",
+      "escalation_reasons": [
+        "draft ran to 251 words",
+        "draft barely overlaps the retrieved policy (11%)"
+      ],
+      "draft_chars": 1630,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "escalation",
+        "_total"
+      ],
+      "total_latency_s": 41.3415
+    },
+    {
+      "ticket_id": "T0009",
+      "true_category": "technical",
+      "triaged": "technical",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "low",
+      "confidence": 0.85,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 1499,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 50.3471
+    },
+    {
+      "ticket_id": "T0022",
+      "true_category": "billing",
+      "triaged": "billing",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "high",
+      "confidence": 0.85,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 1295,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 55.6688
+    },
+    {
+      "ticket_id": "T0023",
+      "true_category": "billing",
+      "triaged": "billing",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "high",
+      "confidence": 0.85,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 1518,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 48.844
+    },
+    {
+      "ticket_id": "T0024",
+      "true_category": "billing",
+      "triaged": "billing",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "low",
+      "confidence": 1.0,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 935,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 32.7425
+    },
+    {
+      "ticket_id": "T0030",
+      "true_category": "technical",
+      "triaged": "technical",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "high",
+      "confidence": 1.0,
+      "queue": "auto-resolved",
+      "escalation_reasons": [],
+      "draft_chars": 1369,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "respond",
+        "_total"
+      ],
+      "total_latency_s": 52.9384
+    },
+    {
+      "ticket_id": "T0033",
+      "true_category": "account_access",
+      "triaged": "account_access",
+      "triage_ok": true,
+      "triage_source": "llm",
+      "urgency": "high",
+      "confidence": 1.0,
+      "queue": "human-tier-2",
+      "escalation_reasons": [
+        "policy requires human handling: ACC-02"
+      ],
+      "draft_chars": 1497,
+      "nodes": [
+        "triage",
+        "retrieve",
+        "resolution",
+        "gate",
+        "escalation",
+        "_total"
+      ],
+      "total_latency_s": 44.2003
+    }
+  ]
+}

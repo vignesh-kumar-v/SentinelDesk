@@ -1,0 +1,65 @@
+{
+  "judge_model": "deepseek-v4-pro:cloud",
+  "rubric_version": "v1",
+  "rubric_fingerprint": "f14d5cd4800b",
+  "tickets": 445,
+  "candidates_per_ticket": 2,
+  "judged": 409,
+  "order_inconsistency_rate": 0.1589,
+  "winner_distribution": {
+    "rushed": 123,
+    "tie": 65,
+    "grounded": 221
+  },
+  "usable_pairs": 344,
+  "pair_yield": 0.8411,
+  "mean_scores_by_strategy": {
+    "grounded": {
+      "correctness": 0.489,
+      "completeness": 0.292,
+      "conciseness": 1.127,
+      "tone": 0.961,
+      "total": 2.869
+    },
+    "rushed": {
+      "correctness": 0.417,
+      "completeness": 0.049,
+      "conciseness": 0.197,
+      "tone": 0.639,
+      "total": 1.302
+    }
+  },
+  "dimension_separation": {
+    "correctness": {
+      "mean_gap": 0.738,
+      "favours_winner_frac": 0.689
+    },
+    "completeness": {
+      "mean_gap": 0.157,
+      "favours_winner_frac": 0.262
+    },
+    "conciseness": {
+      "mean_gap": 0.605,
+      "favours_winner_frac": 0.677
+    },
+    "tone": {
+      "mean_gap": 0.449,
+      "favours_winner_frac": 0.613
+    },
+    "_n_usable": 344,
+    "_correctness_identical_frac": 0.311,
+    "_both_incorrect_frac": 0.259
+  },
+  "strategy_as_chosen": {
+    "rushed": 123,
+    "grounded": 221
+  },
+  "mean_margin": 2.385,
+  "mean_chars_chosen": 606.0,
+  "mean_chars_rejected": 915.6,
+  "length_ratio_chosen_over_rejected": 0.662,
+  "mean_candidate_chars": {
+    "grounded": 547.0,
+    "rushed": 971.4
+  }
+}
