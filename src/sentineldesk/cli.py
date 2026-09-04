@@ -269,6 +269,9 @@ def train_dpo(
         seed=get_settings().seed, dtype=dtype,
     )
     summary = train(cfg, pairs)
+    (Paths.reports / "phase2_training_summary.json").write_text(
+        json.dumps(summary, indent=2), encoding="utf-8"
+    )
     try:
         png = plot_history(out_dir / "history.json", Paths.reports / "phase2_training.png")
         summary["curves"] = str(png)
@@ -288,6 +291,74 @@ def train_dpo(
                 f"acc {row['reward/accuracy']:.2f}  kl {row.get('kl/chosen', 0):+.3f}",
             )
     console.print(table)
+
+
+@app.command("sweep-dpo")
+def sweep_dpo(
+    pairs: Path = typer.Option(Path("data/prefs/pairs.jsonl")),
+    out_root: Path = typer.Option(Path("artifacts/dpo/sweep")),
+    lrs: str = typer.Option("5e-7,2e-6,8e-6", help="comma-separated learning rates"),
+    betas: str = typer.Option("0.1", help="comma-separated beta values"),
+    epochs: int = typer.Option(3),
+    batch_size: int = typer.Option(2),
+    grad_accum: int = typer.Option(8),
+    label_smoothing: float = typer.Option(0.0),
+    drift_limit: float = typer.Option(30.0, help="flag runs whose policy drifts past this"),
+    base_model: str = typer.Option(""),
+) -> None:
+    """PHASE 2: sweep DPO hyperparameters, selecting on a validation split.
+
+    ~400 pairs at an effective batch of 16 is about 25 optimiser steps per epoch. The
+    5e-7 quoted in the DPO literature assumes thousands of steps on a far larger
+    model, so the rate has to be chosen rather than assumed. Selection never touches
+    the held-out tickets the Phase 5 arena uses.
+    """
+    from .dpo.plots import plot_history
+    from .dpo.sweep import run_sweep
+    from .dpo.train import DPOConfig
+
+    base = DPOConfig(
+        base_model=base_model or get_settings().base_model,
+        epochs=epochs, batch_size=batch_size, grad_accum=grad_accum,
+        label_smoothing=label_smoothing, seed=get_settings().seed,
+    )
+    grid = [
+        {"learning_rate": float(lr), "beta": float(b)}
+        for b in betas.split(",")
+        for lr in lrs.split(",")
+    ]
+    report = run_sweep(pairs, base, grid, out_root, drift_limit=drift_limit)
+
+    table = Table(title=f"Phase 2 — DPO sweep ({len(grid)} configs)")
+    for col in ("config", "lr", "beta", "steps", "train loss", "eval loss",
+                "eval acc", "eval margin", "drift"):
+        table.add_column(col)
+    for r in report["runs"]:
+        mark = "[green]" if r["name"] == report["selected"] else ""
+        end = "[/]" if mark else ""
+        drift = f"{r['drift_chosen']:.2f}" + (" [red]!over[/]" if r["over_drift_limit"] else "")
+        table.add_row(
+            f"{mark}{r['name']}{end}", f"{r['lr']:.0e}", str(r["beta"]), str(r["steps"]),
+            f"{r['train_loss_first']:.3f}->{r['train_loss_last']:.3f}",
+            f"{r['eval_loss']:.4f}", f"{r['eval_accuracy']:.3f}",
+            f"{r['eval_margin']:+.3f}", drift,
+        )
+    console.print(table)
+    console.print(f"[green]selected[/] {report['selected']} -> {report['published_checkpoint']}")
+    console.print(f"[dim]{report['selection_rule']}[/dim]")
+
+    dump_selected = Paths.reports / "phase2_sweep.json"
+    dump_selected.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    best_hist = Path(report["selected_checkpoint"]).parent / "history.json"
+    try:
+        plot_history(best_hist, Paths.reports / "phase2_training.png")
+        # the winning run's summary is what the results report reads
+        summary = json.loads((Path(report["selected_checkpoint"]).parent / "summary.json").read_text())
+        (Paths.reports / "phase2_training_summary.json").write_text(
+            json.dumps(summary, indent=2), encoding="utf-8"
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("could not plot curves: %s", exc)
 
 
 @app.command("plot-curves")

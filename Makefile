@@ -7,7 +7,7 @@ VLLM_IMAGE := sentineldesk/vllm-cpu:0.11.0-pinned
 .DEFAULT_GOAL := help
 .PHONY: help setup doctor test lint fmt clean \
         smoke tickets pairs spotcheck spotcheck-human \
-        train curves graph-check \
+        sweep train curves graph-check \
         vllm-build vllm-build-native vllm-serve vllm-stop bench \
         arena report all-core
 
@@ -51,7 +51,10 @@ spotcheck-human: ## PHASE 1 gate (human): write a blind worksheet to label yours
 	$(SD) spotcheck-human --n 20
 
 # ----------------------------------------------------------------- phase 2
-train: ## PHASE 2: DPO fine-tune on the preference pairs
+sweep: ## PHASE 2: sweep DPO hyperparameters, select on a validation split
+	$(SD) sweep-dpo
+
+train: ## PHASE 2: a single DPO run with fixed hyperparameters
 	$(SD) train-dpo
 
 curves: ## plot loss / rewards / margin / KL from the training history
@@ -86,7 +89,7 @@ arena: ## PHASE 5: blind judge-scored win-rate on the held-out set
 report: ## regenerate reports/RESULTS.md from the phase reports
 	$(SD) report
 
-all-core: smoke tickets pairs spotcheck train curves graph-check bench arena report ## the whole core scope
+all-core: smoke tickets pairs spotcheck sweep curves graph-check bench arena report ## the whole core scope
 
 clean: ## remove generated data and artifacts (keeps the policy KB)
 	rm -rf data/processed data/prefs artifacts reports/*.json reports/*.png
