@@ -153,7 +153,8 @@ looked like a compiler failure. The version constraint is the thing to read firs
 
 Written at 83 of 445 comparisons judged, deliberately before any Phase 5 number
 exists, so that whatever the arena says later cannot be dressed up as having been
-expected.
+expected. Numbers below are from that partial sample; the final figures over all 409
+judged comparisons follow in F4, and one of them moved a lot.
 
 **Order-inconsistency is 22.9%.** Nearly a quarter of comparisons flip when the two
 responses swap display position. Those are dropped rather than resolved, so they do
@@ -191,3 +192,77 @@ pairs, and correctness is identical on both sides in 25%. In that quarter of the
 the gradient really is coming from style alone. That is a property of a 0.5B model
 answering policy questions, not of the rubric, and it caps how much correctness signal
 DPO can extract here however good the labelling is.
+
+## F4 — Phase 1 final, and a length confound worth naming
+
+Over all 409 judged comparisons rather than the first 83:
+
+* **Order-inconsistency is 15.9%**, not the 22.9% the partial sample suggested. The
+  early estimate was pessimistic; the correction is in the honest direction but it is
+  a correction either way, and the partial figure should not be quoted.
+* **344 usable pairs** from 445 tickets, an 84% yield.
+* `grounded` is chosen 221 times to `rushed`'s 123. The label is not predictable from
+  the strategy, which is what on-policy preference data should look like — if one
+  prompting strategy won every time, DPO would be learning to imitate that prompt.
+
+Which dimension actually decided the labels, per pair:
+
+| dimension | mean winner−loser gap | favours winner in |
+|---|---|---|
+| correctness | +0.738 | 68.9% |
+| conciseness | +0.605 | 67.7% |
+| tone | +0.449 | 61.3% |
+| completeness | +0.157 | 26.2% |
+
+Correctness leads, but conciseness is close behind, and that matters because of the
+next number.
+
+**The confound: chosen responses are 34% shorter than rejected ones** (606 vs 916
+characters, ratio 0.66). The `rushed` strategy is verbose by construction — 971
+characters against `grounded`'s 547 — and it loses about two thirds of the time. So
+"shorter" and "preferred" are correlated in the training data.
+
+The rubric names length as an explicit non-criterion, and that governs how the judge
+*scores*. It cannot decorrelate what the two strategies actually produce. A model
+trained on these pairs can lower the loss either by being more correct or by being
+shorter, and nothing in the objective distinguishes those.
+
+This is why `corr_win_vs_length_delta` exists in the Phase 5 arena, and it is now
+load-bearing rather than decorative. If the tuned arm wins mainly where it is shorter
+than the baseline, that correlation will show it, and the honest reading of a win
+would be "DPO learned brevity", not "DPO learned accuracy".
+
+Also recorded: in 31% of usable pairs the two sides score identically on correctness
+and in 26% both score zero. In roughly a third of the data the gradient carries no
+correctness signal at all. That is a property of a 0.5B model answering policy
+questions, and it caps what this experiment can show however clean the labelling is.
+
+## F5 — Why the training loop was slow, and why the first diagnosis was wrong
+
+Training initially ran at 5.88 s/pair, which put a three-config sweep at roughly six
+hours. Three settings took it to 0.70 s/pair, and all three change peak memory per
+step rather than work per step:
+
+| batch | chunk | response cap | s/pair |
+|---|---|---|---|
+| 2 | 256 | 448 | 5.88 |
+| 2 | 64 | 256 | 1.17 |
+| 1 | 64 | 256 | 0.70 |
+
+Batch 1 with `grad_accum` 16 beats batch 2 with `grad_accum` 8 *per pair*, which is
+backwards if you count arithmetic and correct if you count allocations: on unified
+memory a step that fits stays on the GPU and a step that does not thrashes swap.
+
+The response cap was **not** taken from that table. Measured against the data,
+responses reach 263 tokens, so a 256-token cap truncates 16% of them — and truncating
+a response changes its sequence log-prob and therefore the gradient. That is a silent
+bias, not a speed/quality trade, so the cap is 320, which truncates nothing and keeps
+the speedup.
+
+**The wrong diagnosis.** Before this, left padding and bfloat16 were reported as having
+made training *slower* — 16 s/it, then 39-48 s/it. That was wrong. An earlier
+micro-benchmark process was still alive and holding MPS memory, and swap had filled to
+33 GB of 34 GB; every timing taken in that window was measuring contention. The lesson
+is procedural rather than technical: on a machine where the accelerator shares memory
+with everything else, a timing number is only meaningful with a verified-quiet machine,
+and "did my last experiment actually exit" is part of the measurement.
