@@ -476,3 +476,41 @@ answering policy questions is wrong most of the time either way, which caps how 
 correctness gradient exists to extract. The realistic paths are a larger base model, a
 best-of-n candidate scheme that surfaces occasional correct responses, or many more
 pairs — not more epochs on this data.
+
+## F10 — What the samples show, including a case where both models are simply wrong
+
+`compare-samples` writes the first six held-out tickets under greedy decoding. They
+are not cherry-picked — they are the first six, deterministically — but they are also
+**not representative on length**: three are shorter and three longer, where across all
+149 held-out tickets the tuned arm is shorter in 111 (74%). The brevity effect is a
+strong tendency, not a rule, and a six-ticket window is too small to show it. Worth
+stating, because a reader scanning only the samples would draw the wrong conclusion
+about the aggregate.
+
+### T0005: the fine-tune did not fix the error that matters
+
+The ticket is a `wrong_assumption` case. The customer says a support agent told them
+deleting and reinstalling the app would fix SYNC-409 without losing local drafts, and
+asks for confirmation. The policy in context says the opposite:
+
+> Deleting and reinstalling the app does NOT fix SYNC-409 and loses local drafts.
+
+**Base (235 chars):** "Delete and Reinstall the App … This will ensure you get a new
+version without losing any local drafts."
+
+**DPO-tuned (748 chars):** "Delete and Reinstall App: Delete the app and reinstall it.
+Check Local Drafts: Ensure you have enough local drafts to avoid losing them."
+
+Both agree with the customer's false premise. Both would cost this customer their
+drafts. The tuned model is three times longer here and no more correct — it has
+acquired more structure and more hedging steps without acquiring the one fact the
+policy states plainly.
+
+This is the +0.054 correctness gap made concrete. The aggregate says correctness
+barely moved; this is what "barely moved" looks like on the ticket type the whole
+dataset was designed around. A win-rate of 56.7% coexists with the tuned agent giving
+advice that destroys a customer's data on exactly the case the policy warns about.
+
+It is also the argument for keeping the escalation gate rule-based and independent of
+the resolution model's confidence (D6). Neither of these drafts hedges; both read as
+confident. A confidence signal derived from the model would not have caught either.
