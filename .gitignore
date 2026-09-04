@@ -18,7 +18,10 @@ venv/
 # secrets
 .env
 
-# model weights + generated data are large and reproducible; the manifests are not
+# Trained checkpoints are large and reproducible from the pairs plus the recorded
+# config; the training *history* is the artifact worth keeping in the repo, since it
+# is what the results report reads and what a reader would want to check.
+artifacts/**/checkpoint/
 artifacts/**/*.safetensors
 artifacts/**/*.bin
 artifacts/**/*.pt
@@ -29,6 +32,10 @@ data/cache/
 
 # vllm build tree
 third_party/vllm/
+
+# run logs: megabytes of progress-bar carriage returns, regenerable, and the
+# findings that matter from them are written up in docs/decisions.md
+reports/*.log
 
 # os
 .DS_Store

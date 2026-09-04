@@ -1,14 +1,0 @@
-Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights:   0%|          | 1/290 [00:01<05:00,  1.04s/it]Loading weights:  96%|█████████▌| 279/290 [00:01<00:00, 332.48it/s]Loading weights: 100%|██████████| 290/290 [00:01<00:00, 247.49it/s]
-00:32:00 INFO     HFGenerator ready: Qwen/Qwen2.5-0.5B-Instruct on mps          
-                  (torch.float32)                                               
-[transformers] The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2262.47it/s]
-                    Phase 4 — serving throughput and latency                    
-┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━┓
-┃ backend         ┃ mode         ┃ reqs ┃ tok/s ┃ p50 s ┃ p95 s ┃ wall s ┃ err ┃
-┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━┩
-│ vllm-cpu        │ sequential   │ 24   │ 17.2  │ 9.00  │ 10.32 │ 205.7  │ 0   │
-│ vllm-cpu        │ concurrent-8 │ 24   │ 96.6  │ 10.41 │ 12.07 │ 32.7   │ 0   │
-│ transformers-m… │ batched-8    │ 24   │ 83.2  │ 1.18  │ 1.18  │ 28.4   │ 0   │
-│ mlx-metal       │ sequential   │ 8    │ 131.7 │ 0.42  │ 1.56  │ 5.0    │ 0   │
-└─────────────────┴──────────────┴──────┴───────┴───────┴───────┴────────┴─────┘
