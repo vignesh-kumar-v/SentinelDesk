@@ -36,3 +36,30 @@
                   reply:                                                        
 00:27:45 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
 00:27:56 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:28:12 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:28:47 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:29:15 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:29:27 WARNING  unparseable/incomplete JSON on attempt 1: '{"a":              
+                  {"correctness": 0, "com'                                      
+00:29:52 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:30:06 WARNING  unparseable/incomplete JSON on attempt 2: '{"a":              
+                  {"correctness": 0, "completeness": 0, "conciseness": 0,       
+                  "tone": 1},\n  "b": {"correctness": 0, "completeness": 0,     
+                  "conciseness": 0, "tone'                                      
+00:30:12 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:30:28 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:30:34 INFO     judged 75/445                                                 
+00:30:45 WARNING  unparseable/incomplete JSON on attempt 3: '{"a":              
+                  {"correctness": 0, "completeness": 0, "conciseness": 0,       
+                  "tone": 0},\n  "b": {"correctness": 0, "completeness": 0,     
+                  "conciseness": 1, "tone": 0},\n  "winner'                     
+         WARNING  judge failed for T0096: no valid JSON after 3 attempts; last  
+                  reply: {"a": {"correctness": 0, "completeness": 0,            
+                  "conciseness": 0, "tone": 0},                                 
+                                                                                
+         WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:31:19 WARNING  unparseable/incomplete JSON on attempt 3: ''                  
+         WARNING  judge failed for T0109: no valid JSON after 3 attempts; last  
+                  reply:                                                        
+00:31:33 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:31:42 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
