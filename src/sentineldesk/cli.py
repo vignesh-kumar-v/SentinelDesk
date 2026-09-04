@@ -696,6 +696,57 @@ def arena_aa(
                       "weights — do not trust the real arena until this is explained.")
 
 
+@app.command("compare-samples")
+def compare_samples(
+    n: int = typer.Option(6),
+    tuned: Path = typer.Option(Path("artifacts/dpo/checkpoint")),
+    base: str = typer.Option(""),
+    max_tokens: int = typer.Option(220),
+    out: Path = typer.Option(Path("reports/phase5_samples.md")),
+) -> None:
+    """Print base vs tuned responses side by side on held-out tickets.
+
+    A win-rate says which arm the judge preferred; it does not say what changed. These
+    are the raw generations, so a reader can see whether the tuned model became more
+    accurate, merely shorter, or degenerate — three outcomes a single number cannot
+    tell apart.
+    """
+    from .data.kb import render_policies
+    from .data.schema import Ticket, read_jsonl
+    from .prefs.candidates import STRATEGIES, build_messages
+    from .serving.local import HFGenerator
+
+    s = get_settings()
+    tickets = [t for t in read_jsonl(Path("data/processed/tickets.jsonl"), Ticket)
+               if t.split == "heldout"][:n]
+    prompts = [build_messages(t, STRATEGIES["grounded"]) for t in tickets]
+
+    arms = {}
+    for label, path in (("tuned", str(tuned)), ("base", base or s.base_model)):
+        gen = HFGenerator(path, batch_size=4)
+        arms[label] = gen.generate(prompts, temperature=0.0, top_p=1.0, max_tokens=max_tokens)
+        del gen
+
+    lines = ["# Base vs DPO-tuned — held-out samples\n",
+             "_Greedy decoding, identical prompts and retrieved policies for both arms._\n"]
+    for i, t in enumerate(tickets):
+        lines += [
+            f"\n## {t.id} — {t.category} / {t.urgency}\n",
+            f"**Subject:** {t.subject}\n", f"{t.body}\n",
+            f"<details><summary>policy the ticket was written from</summary>\n\n"
+            f"```\n{render_policies(t.policy_ids)}\n```\n</details>\n",
+            f"**Base** ({len(arms['base'][i])} chars)\n\n> "
+            + arms["base"][i].strip().replace("\n", "\n> ") + "\n",
+            f"**DPO-tuned** ({len(arms['tuned'][i])} chars)\n\n> "
+            + arms["tuned"][i].strip().replace("\n", "\n> ") + "\n",
+        ]
+        console.print(f"[bold]{t.id}[/] {t.category}  base {len(arms['base'][i])} chars  "
+                      f"tuned {len(arms['tuned'][i])} chars")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
+    console.print(f"wrote {out}")
+
+
 @app.command("report")
 def report(out: Path = typer.Option(Path("reports/RESULTS.md"))) -> None:
     """Regenerate the results write-up from whichever phase reports exist."""
