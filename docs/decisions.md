@@ -266,3 +266,44 @@ micro-benchmark process was still alive and holding MPS memory, and swap had fil
 is procedural rather than technical: on a machine where the accelerator shares memory
 with everything else, a timing number is only meaningful with a verified-quiet machine,
 and "did my last experiment actually exit" is part of the measurement.
+
+## F6 — The Phase 1 judge gate, and why raw agreement is the wrong headline
+
+An independent frontier model (`kimi-k3:cloud`) re-labelled 40 of the same
+comparisons under the identical rubric, in both display orders:
+
+| metric | value |
+|---|---|
+| raw agreement | 72.5% |
+| Cohen's kappa | 0.586 |
+| agreement where both judges committed to a winner | 24/25 = **96.0%** |
+
+The confusion matrix is where the interpretation lives:
+
+```
+grounded|grounded 12   rushed|rushed 12   tie|tie 5
+tie|grounded       5   tie|rushed     3   grounded|tie 2
+rushed|grounded    1
+```
+
+Of eleven disagreements, **one** is a direct winner flip. The other ten have a "tie"
+on one side, and a tie from the primary judge means it flipped across display orders —
+so that comparison was already dropped before training. The two judges essentially
+never disagree about which response is better; they disagree about whether the gap is
+decisive enough to call.
+
+Those are different failures and only the first threatens the labels, so
+`decisive_agreement` is computed and reported next to kappa rather than being folded
+into it. Reporting 72.5% alone would understate a judge that is directionally
+reliable; reporting 96% alone would hide how often it declines to commit. Both are in
+the results.
+
+Against the blueprint's own gate — "fix the rubric if you disagree more than about
+10-15%" — raw disagreement is 27.5% and fails it, directional disagreement is 4% and
+passes. The rubric is kept, with that reasoning stated rather than the flattering half
+quoted.
+
+Kappa is reported rather than raw agreement alone for the usual reason: these labels
+are skewed, and a labeller that always picked `grounded` would score high raw
+agreement while carrying no information. 0.586 is "moderate" on the Landis-Koch scale,
+just short of "substantial".

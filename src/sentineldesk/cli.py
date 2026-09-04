@@ -199,7 +199,8 @@ def spotcheck(
     dump_json(Paths.reports / "phase1_spotcheck_second_judge.json", out)
 
     table = Table(title=f"Phase 1 gate — {get_settings().judge_model} vs {second_model}")
-    for k in ("n", "agree", "raw_agreement", "cohens_kappa", "confusion"):
+    for k in ("n", "agree", "raw_agreement", "cohens_kappa",
+              "decisive_n", "decisive_agree", "decisive_agreement", "confusion"):
         table.add_row(k, json.dumps(out[k]) if isinstance(out[k], dict) else str(out[k]))
     console.print(table)
     console.print(f"[dim]{len(out['disagreements'])} disagreements written to the report[/dim]")

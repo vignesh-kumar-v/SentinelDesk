@@ -111,6 +111,15 @@ def build_report(reports_dir: Path, out: Path) -> Path:
         add(f"- **second-judge cross-check**: `{p1s['second_judge']}` re-labelled {p1s['n']} of the "
             f"same comparisons — raw agreement {_pct(p1s['raw_agreement'])}, "
             f"Cohen's kappa {p1s['cohens_kappa']}")
+        if p1s.get("decisive_n"):
+            add(f"- **agreement where both judges committed to a winner: "
+                f"{p1s['decisive_agree']}/{p1s['decisive_n']} = "
+                f"{_pct(p1s['decisive_agreement'])}**. This is the number that bears on the "
+                "preference labels. Two labellers can disagree about which response is better, "
+                "or about whether the gap is decisive enough to call; only the first threatens "
+                "the data, and a \"tie\" here means the primary judge flipped across display "
+                "orders, which already excludes that comparison from training.")
+            add(f"- confusion (primary|second): `{p1s['confusion']}`")
     if p1h:
         add(f"- **human spot-check**: {p1h['n']} blind comparisons — agreement "
             f"{_pct(p1h['raw_agreement'])}, Cohen's kappa {p1h['cohens_kappa']}")

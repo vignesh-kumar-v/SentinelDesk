@@ -42,6 +42,9 @@ class AgreementResult:
     cohens_kappa: float
     confusion: dict[str, int]
     disagreements: list[dict]
+    decisive_n: int = 0
+    decisive_agree: int = 0
+    decisive_agreement: float = 0.0
 
     def as_dict(self) -> dict:
         return {
@@ -49,6 +52,16 @@ class AgreementResult:
             "agree": self.agree,
             "raw_agreement": round(self.raw_agreement, 4),
             "cohens_kappa": round(self.cohens_kappa, 4),
+            # Agreement restricted to items where BOTH labellers committed to a
+            # winner. Two labellers can disagree in two quite different ways: about
+            # which response is better, or about whether the gap is decisive enough
+            # to call. Only the first is a threat to the preference labels - a "tie"
+            # here means the primary judge flipped across display orders, and those
+            # comparisons are dropped from training anyway. Collapsing both into one
+            # number understates a judge that is directionally reliable.
+            "decisive_n": self.decisive_n,
+            "decisive_agree": self.decisive_agree,
+            "decisive_agreement": round(self.decisive_agreement, 4),
             "confusion": self.confusion,
             "disagreements": self.disagreements,
         }
@@ -78,6 +91,10 @@ def _compare(primary: list[str], other: list[str], meta: list[dict]) -> Agreemen
         for x, y, m in zip(primary, other, meta, strict=True)
         if x != y
     ]
+    decisive = [
+        (x, y) for x, y in zip(primary, other, strict=True) if x != "tie" and y != "tie"
+    ]
+    decisive_agree = sum(1 for x, y in decisive if x == y)
     return AgreementResult(
         n=len(primary),
         agree=agree,
@@ -85,6 +102,9 @@ def _compare(primary: list[str], other: list[str], meta: list[dict]) -> Agreemen
         cohens_kappa=cohens_kappa(primary, other),
         confusion=dict(confusion),
         disagreements=disagreements,
+        decisive_n=len(decisive),
+        decisive_agree=decisive_agree,
+        decisive_agreement=decisive_agree / len(decisive) if decisive else 0.0,
     )
 
 

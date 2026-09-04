@@ -1,6 +1,6 @@
 # SentinelDesk — Results
 
-_Generated 2026-09-04 07:45 UTC from the phase reports in this directory. Regenerate with `make report`._
+_Generated 2026-09-04 10:27 UTC from the phase reports in this directory. Regenerate with `make report`._
 
 ## Headline
 
@@ -20,6 +20,27 @@ _Phase 5 has not been run. No win-rate to report._
 - split: {'heldout': 149, 'train': 445}
 - categories: {'billing': 139, 'technical': 135, 'account_access': 106, 'shipping': 107, 'product_info': 107}
 - scenario mix: {'multi_part': 109, 'vague': 108, 'wrong_assumption': 211, 'plain': 88, 'urgent_pressure': 78}
+- judge: `deepseek-v4-pro:cloud`, rubric `v1` (fingerprint `f14d5cd4800b`)
+- 409 comparisons x 2 display orders
+- **order-inconsistency rate 15.9%** — how often swapping which response was shown first flipped the verdict. Those comparisons are dropped rather than resolved, and this rate bounds how much any downstream win-rate can be trusted.
+- 344 usable pairs (84.1% yield)
+- chosen-strategy split: {'rushed': 123, 'grounded': 221}
+- mean rubric scores by strategy: {"grounded": {"correctness": 0.489, "completeness": 0.292, "conciseness": 1.127, "tone": 0.961, "total": 2.869}, "rushed": {"correctness": 0.417, "completeness": 0.049, "conciseness": 0.197, "tone": 0.639, "total": 1.302}}
+- length ratio chosen/rejected: 0.662 (a ratio far from 1.0 means DPO would learn length before it learns correctness)
+
+**Which rubric dimension actually decided the training labels** (over the 344 usable pairs). If tone or conciseness separated them and correctness did not, DPO would be learning house style and any win-rate would be measuring that instead.
+
+| dimension | mean winner−loser gap | favours winner in |
+|---|---|---|
+| correctness | +0.738 | 68.9% of pairs |
+| completeness | +0.157 | 26.2% of pairs |
+| conciseness | +0.605 | 67.7% of pairs |
+| tone | +0.449 | 61.3% of pairs |
+
+- correctness was identical on both sides in 31.1% of pairs; both sides scored 0 on correctness in 25.9%
+- **second-judge cross-check**: `kimi-k3:cloud` re-labelled 40 of the same comparisons — raw agreement 72.5%, Cohen's kappa 0.5857
+- **agreement where both judges committed to a winner: 24/25 = 96.0%**. This is the number that bears on the preference labels. Two labellers can disagree about which response is better, or about whether the gap is decisive enough to call; only the first threatens the data, and a "tie" here means the primary judge flipped across display orders, which already excludes that comparison from training.
+- confusion (primary|second): `{'grounded|grounded': 12, 'rushed|grounded': 1, 'tie|tie': 5, 'rushed|rushed': 12, 'tie|grounded': 5, 'grounded|tie': 2, 'tie|rushed': 3}`
 
 ## Phase 2 — DPO training
 
