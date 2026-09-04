@@ -20,6 +20,55 @@ log = get_logger(__name__)
 ESCALATION_QUEUE = "human-tier-2"
 
 
+def make_guard_input_node(guards):
+    """Screen and redact the inbound ticket before any model sees it."""
+
+    def guard_input(state: TicketState) -> dict:
+        t0 = time.perf_counter()
+        body = state.get("body", "")
+        d = guards.check_input(body)
+        return {
+            # The redacted body replaces the original for everything downstream, so a
+            # card number never reaches the model, the logs, or the judge.
+            "body": d.text,
+            "guard_input_allowed": d.allowed,
+            "guard_reasons": list(d.reasons),
+            "guard_pii": dict(d.pii_found),
+            "trace": [{
+                "node": "guard_input", "latency_s": round(time.perf_counter() - t0, 4),
+                "allowed": d.allowed, "pii": d.pii_found, "rail_s": d.rail_latency_s,
+                "rail_available": d.rail_available,
+            }],
+        }
+
+    return guard_input
+
+
+def make_guard_output_node(guards):
+    """Screen and redact the draft, and validate its structure, before it can be sent."""
+    from ..guardrails.schema import validate_response
+
+    def guard_output(state: TicketState) -> dict:
+        t0 = time.perf_counter()
+        draft = state.get("draft", "")
+        d = guards.check_output(draft, user_text=state.get("body", ""))
+        issues = validate_response(d.text)
+        return {
+            "draft": d.text,
+            "guard_output_allowed": d.allowed,
+            "guard_reasons": list(state.get("guard_reasons", [])) + list(d.reasons)
+            + issues.reasons(),
+            "schema_issues": issues.reasons(),
+            "trace": [{
+                "node": "guard_output", "latency_s": round(time.perf_counter() - t0, 4),
+                "allowed": d.allowed, "pii": d.pii_found, "schema_ok": issues.ok,
+                "rail_s": d.rail_latency_s,
+            }],
+        }
+
+    return guard_output
+
+
 def make_gate_node(threshold: float):
     """Score the draft and decide the route. The only node that can escalate."""
 
@@ -38,6 +87,19 @@ def make_gate_node(threshold: float):
         if not draft.strip():
             escalate = True
             reasons.append("resolution produced no draft")
+
+        # A guardrail verdict is not advisory. An output the rails refused, or one that
+        # fails structural validation, must never reach the customer regardless of how
+        # confident the resolution model was.
+        if state.get("guard_output_allowed") is False:
+            escalate = True
+            reasons.append("output guardrail refused the draft")
+        if state.get("guard_input_allowed") is False:
+            escalate = True
+            reasons.append("input guardrail refused the ticket")
+        for issue in state.get("schema_issues", []) or []:
+            escalate = True
+            reasons.append(f"schema: {issue}")
 
         forced = mandatory_escalation_hits(
             state.get("subject", ""), state.get("body", ""), state.get("policy_ids", [])
@@ -124,6 +186,7 @@ def build_pipeline(
     triage_client=None,
     triage_model: str = "",
     use_llm_triage: bool = True,
+    guards=None,
 ) -> Pipeline:
     s = get_settings()
     thr = s.escalation_confidence_threshold if threshold is None else threshold
@@ -134,17 +197,29 @@ def build_pipeline(
         triage_client = None
 
     g = StateGraph(TicketState)
+    if guards is not None:
+        g.add_node("guard_input", make_guard_input_node(guards))
     g.add_node("triage", make_triage_node(triage_client, triage_model))
     g.add_node("retrieve", make_retrieve_node())
     g.add_node("resolution", make_resolution_node(resolver))
+    if guards is not None:
+        g.add_node("guard_output", make_guard_output_node(guards))
     g.add_node("gate", make_gate_node(thr))
     g.add_node("respond", respond)
     g.add_node("escalate", escalate)
 
-    g.set_entry_point("triage")
+    if guards is not None:
+        g.set_entry_point("guard_input")
+        g.add_edge("guard_input", "triage")
+    else:
+        g.set_entry_point("triage")
     g.add_edge("triage", "retrieve")
     g.add_edge("retrieve", "resolution")
-    g.add_edge("resolution", "gate")
+    if guards is not None:
+        g.add_edge("resolution", "guard_output")
+        g.add_edge("guard_output", "gate")
+    else:
+        g.add_edge("resolution", "gate")
     g.add_conditional_edges("gate", _route, {"respond": "respond", "escalate": "escalate"})
     g.add_edge("respond", END)
     g.add_edge("escalate", END)

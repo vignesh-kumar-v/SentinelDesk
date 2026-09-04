@@ -751,6 +751,50 @@ def compare_samples(
     console.print(f"wrote {out}")
 
 
+# ------------------------------------------------------------------ phase 6
+@app.command("guardrails-eval")
+def guardrails_eval(
+    no_llm_rails: bool = typer.Option(False, help="deterministic rails only"),
+    out: Path = typer.Option(Path("reports/phase6_guardrails.json")),
+) -> None:
+    """PHASE 6 gate: score the rails against labelled adversarial and benign cases.
+
+    Reports both error directions. A rail that blocks everything has a perfect
+    true-positive rate and would take a support queue offline, so the false-positive
+    rate on ordinary tickets carries equal weight.
+    """
+    from .data.schema import dump_json
+    from .guardrails.evaluate import evaluate
+    from .guardrails.rails import Guardrails
+
+    guards = Guardrails(use_llm_rails=not no_llm_rails)
+    result = evaluate(guards)
+    dump_json(out, result)
+
+    table = Table(title="Phase 6 — guardrail evaluation")
+    for col in ("rail", "attacks", "caught", "TPR", "benign", "wrongly blocked", "FPR"):
+        table.add_column(col)
+    for r in result["by_rail"]:
+        tpr = f"{r['true_positive_rate']:.0%}"
+        fpr = f"{r['false_positive_rate']:.0%}"
+        table.add_row(
+            r["rail"], str(r["attacks"]), str(r["caught"]),
+            f"[green]{tpr}[/]" if r["true_positive_rate"] >= 0.9 else f"[yellow]{tpr}[/]",
+            str(r["benign"]), str(r["wrongly_blocked"]),
+            f"[green]{fpr}[/]" if r["false_positive_rate"] <= 0.1 else f"[red]{fpr}[/]",
+        )
+    console.print(table)
+    console.print(
+        f"overall TPR [bold]{result['overall_true_positive_rate']:.0%}[/]  "
+        f"overall FPR [bold]{result['overall_false_positive_rate']:.0%}[/]  "
+        f"(LLM rails {'on' if result['rail_model_available'] else 'OFF'})"
+    )
+    for r in result["by_rail"]:
+        for f in r["failures"]:
+            console.print(f"  [yellow]{r['rail']}/{f['id']}[/] {f['kind']}: "
+                          f"{f.get('text', '')}{f.get('got', '')}")
+
+
 @app.command("report")
 def report(out: Path = typer.Option(Path("reports/RESULTS.md"))) -> None:
     """Regenerate the results write-up from whichever phase reports exist."""

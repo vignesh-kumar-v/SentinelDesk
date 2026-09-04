@@ -42,6 +42,13 @@ class TicketState(TypedDict, total=False):
     escalation_reasons: list[str]
     queue: str
 
+    # guardrails
+    guard_input_allowed: bool
+    guard_output_allowed: bool
+    guard_reasons: list[str]
+    guard_pii: dict[str, Any]
+    schema_issues: list[str]
+
     # output
     final_response: str
     trace: Annotated[list[dict], _append]

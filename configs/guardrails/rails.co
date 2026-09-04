@@ -1,0 +1,5 @@
+define bot refuse off topic
+  "I can only help with Nimbus account, billing, technical, shipping and product questions. For anything else, please contact the relevant team directly."
+
+define bot refuse unsafe output
+  "I'm not able to help with that here. I've passed this to a human colleague who can look at it properly."
