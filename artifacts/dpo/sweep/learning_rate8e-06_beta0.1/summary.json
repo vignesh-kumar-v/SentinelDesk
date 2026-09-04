@@ -1,0 +1,63 @@
+{
+  "checkpoint": "artifacts/dpo/sweep/learning_rate8e-06_beta0.1/checkpoint",
+  "optimiser_steps": 60,
+  "train_pairs": 310,
+  "eval_pairs": 34,
+  "wall_clock_s": 1158.3,
+  "first_step": {
+    "loss": 0.7153124697506428,
+    "reward/chosen": 0.026514482968195807,
+    "reward/rejected": 0.06716379040153697,
+    "reward/margin": -0.040649307309649885,
+    "reward/accuracy": 0.375,
+    "logps/chosen": -220.07619285583496,
+    "logps/rejected": -301.7018965482712,
+    "kl/chosen": 0.26514482498168945,
+    "kl/rejected": 0.6716378927230835,
+    "step": 0,
+    "epoch": 0.05161290322580645,
+    "lr": 1.3333333333333332e-06,
+    "grad_norm": 97.0,
+    "elapsed_s": 10.064184000017121
+  },
+  "last_step": {
+    "loss": 0.1281911420325438,
+    "reward/chosen": -0.6486319390436014,
+    "reward/rejected": -2.8181145191192627,
+    "reward/margin": 2.1694825688997903,
+    "reward/accuracy": 1.0,
+    "logps/chosen": -124.8853572209676,
+    "logps/rejected": -328.76255289713544,
+    "kl/chosen": -6.486319224039714,
+    "kl/rejected": -28.18114471435547,
+    "step": 59,
+    "epoch": 3.0,
+    "lr": 6.767366914927297e-09,
+    "grad_norm": 17.25,
+    "elapsed_s": 1143.2602133750042
+  },
+  "first_eval": {
+    "loss": 0.6918767515350791,
+    "reward/chosen": 0.012200327413344947,
+    "reward/rejected": 0.008377389597144964,
+    "reward/margin": 0.0038229374708059955,
+    "reward/accuracy": 0.5294117647058824,
+    "logps/chosen": -175.19589771943933,
+    "logps/rejected": -288.77323217952954,
+    "kl/chosen": 0.12200327480540556,
+    "kl/rejected": 0.08377389346852022,
+    "step": 0
+  },
+  "last_eval": {
+    "loss": 0.7390469566864126,
+    "reward/chosen": -1.7172811828991945,
+    "reward/rejected": -2.1096936683444416,
+    "reward/margin": 0.3924124845687081,
+    "reward/accuracy": 0.5882352941176471,
+    "logps/chosen": -192.49071255852195,
+    "logps/rejected": -309.9539424671846,
+    "kl/chosen": -17.1728115642772,
+    "kl/rejected": -21.09693639418658,
+    "step": 59
+  }
+}

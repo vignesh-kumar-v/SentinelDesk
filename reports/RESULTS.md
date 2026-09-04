@@ -1,6 +1,6 @@
 # SentinelDesk — Results
 
-_Generated 2026-09-04 10:35 UTC from the phase reports in this directory. Regenerate with `make report`._
+_Generated 2026-09-04 14:36 UTC from the phase reports in this directory. Regenerate with `make report`._
 
 ## Headline
 
@@ -44,7 +44,29 @@ _Phase 5 has not been run. No win-rate to report._
 
 ## Phase 2 — DPO training
 
-_not run_
+Swept 3 configurations. **Selection used a validation split of the training pairs only — never the held-out tickets the Phase 5 arena scores.** Choosing a checkpoint by its arena win-rate and then reporting that win-rate would make the headline number a measure of how many configurations were tried.
+
+| config | steps | train loss | eval loss | eval acc | eval margin | train−eval margin | drift |
+|---|---|---|---|---|---|---|---|
+| `learning_rate5e-07_beta0.1` | 60 | 0.7153 → 0.6875 | 0.6971 ⚠ | 0.441 | -0.0066 | +0.020 | +0.129 ⚠eval loss rose |
+| `learning_rate2e-06_beta0.1` **(selected)** | 60 | 0.7153 → 0.5468 | 0.6493 | 0.618 | +0.1806 | +0.226 | +2.862 |
+| `learning_rate8e-06_beta0.1` | 60 | 0.7153 → 0.1282 | 0.7390 ⚠ | 0.588 | +0.3924 | +1.777 | +17.173 ⚠eval loss rose |
+
+_train−eval margin is the overfitting indicator: a run that separates the training pairs far more confidently than the held-out ones has memorised them, and on a ~34-pair validation split its eval accuracy can still look competitive by luck._
+
+_highest validation preference accuracy, ties broken by margin then loss; configs exceeding the drift limit are ranked last. Selection uses a split of the training pairs only — never the held-out arena tickets._
+
+Validation split: 34 pairs, so the standard error on eval accuracy is about 0.086 (8.6% points). Configurations closer together than roughly twice that are not distinguishable by this measurement.
+**The selected configuration beat the runner-up by +0.029 accuracy, which is inside that noise band.** Something has to be chosen, and the rule was fixed in advance, but this selection should be read as 'not clearly worse' rather than 'best'.
+- 60 optimiser steps on 310 pairs (34 held out for eval), 1674.2s
+- train loss 0.7153 -> 0.5468
+- reward margin -0.041 -> +0.407
+- implicit reward, chosen +0.027 -> -0.187, rejected +0.067 -> -0.594
+- preference accuracy 0.38 -> 0.67
+- drift from reference (log pi - log pi_ref on chosen) +0.265 -> -1.870
+- eval loss 0.6974 -> 0.6493, eval margin -0.006 -> +0.181
+
+![training curves](phase2_training.png)
 
 
 ## Phase 3 — Agent graph
