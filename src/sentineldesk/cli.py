@@ -102,7 +102,7 @@ def build_pairs_cmd(
 
     gen = HFGenerator(model or s.base_model, batch_size=batch_size)
     result = build_pairs(
-        tickets, gen, build_judge(), tokenizer=gen.tokenizer,
+        tickets, gen, build_judge(), out_dir=out_dir, tokenizer=gen.tokenizer,
         concurrency=concurrency, min_margin=min_margin,
     )
     persist(result, out_dir, Paths.reports)

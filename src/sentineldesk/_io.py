@@ -17,7 +17,8 @@ from .prefs.judge import PairJudgement
 def load_judgements(
     prefs_dir: Path, tickets_path: Path
 ) -> tuple[list[PairJudgement], dict[str, Ticket], dict[tuple[str, str], Candidate]]:
-    rows = json.loads((prefs_dir / "judgements.json").read_text(encoding="utf-8"))
+    path = prefs_dir / "judgements.jsonl"
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     judgements = [
         PairJudgement(
             ticket_id=r["ticket_id"],

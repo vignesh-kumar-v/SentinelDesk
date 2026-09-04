@@ -13,7 +13,8 @@ signal. Running both orders costs 2x the judge calls and buys two things:
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
+from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 from ..config import get_settings
@@ -100,21 +101,43 @@ class Judge:
         v2 = self._one_order(ticket, y, x)  # y is A
         return aggregate(ticket.id, x.strategy, y.strategy, v1, v2)
 
+    def _safe_judge(self, item: tuple[Ticket, Candidate, Candidate]) -> PairJudgement | None:
+        try:
+            return self.judge_pair(*item)
+        except LLMError as exc:
+            log.warning("judge failed for %s: %s", item[0].id, str(exc)[:120])
+            return None
+
     def judge_many(
         self,
         items: list[tuple[Ticket, Candidate, Candidate]],
         *,
         concurrency: int = 4,
     ) -> list[PairJudgement | None]:
-        def run(item):
-            try:
-                return self.judge_pair(*item)
-            except LLMError as exc:
-                log.warning("judge failed for %s: %s", item[0].id, str(exc)[:120])
-                return None
-
+        """Judge everything, preserving input order. Use judge_stream to checkpoint."""
         with ThreadPoolExecutor(max_workers=concurrency) as pool:
-            return list(pool.map(run, items))
+            return list(pool.map(self._safe_judge, items))
+
+    def judge_stream(
+        self,
+        items: list[tuple[Ticket, Candidate, Candidate]],
+        *,
+        concurrency: int = 4,
+    ) -> Iterator[PairJudgement | None]:
+        """Yield verdicts as they complete, so the caller can persist incrementally.
+
+        Order is completion order, not input order. Callers that need input order
+        should use judge_many; callers that need to survive an interrupted run - which
+        at ~900 hosted-model calls is every caller that matters - should use this.
+        """
+        done = 0
+        with ThreadPoolExecutor(max_workers=concurrency) as pool:
+            futures = [pool.submit(self._safe_judge, item) for item in items]
+            for fut in as_completed(futures):
+                done += 1
+                if done % 25 == 0 or done == len(items):
+                    log.info("judged %d/%d", done, len(items))
+                yield fut.result()
 
 
 def aggregate(
