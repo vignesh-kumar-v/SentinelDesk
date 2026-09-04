@@ -47,16 +47,47 @@ def build_report(reports_dir: Path, out: Path) -> Path:
     add("## Headline\n")
     if p5 and p5.get("n"):
         lo, hi = p5["win_rate_adjusted_ci95"]
+        dlo, dhi = p5["win_rate_decisive_ci95"]
+        adj_sig = not (lo <= 0.5 <= hi)
+        dec_sig = not (dlo <= 0.5 <= dhi)
         add(f"On {p5['n']} held-out tickets, judged blind in both display orders, the DPO-tuned "
-            f"resolution agent beat the base-prompted agent with a tie-adjusted win-rate of "
-            f"**{_pct(p5['win_rate_adjusted'])}** (95% CI {_pct(lo)}–{_pct(hi)}), "
-            f"{p5['wins_tuned']}W / {p5['losses_tuned']}L / {p5['ties']}T. "
-            f"Exact binomial p vs 50% = {p5['binomial_p_vs_50pct']}"
-            f"{' (significant at 0.05)' if p5.get('significant_at_05') else ' (not significant at 0.05)'}.\n")
-        add(f"Ties-dropped win-rate: {_pct(p5['win_rate_decisive'])} "
-            f"(95% CI {_pct(p5['win_rate_decisive_ci95'][0])}–{_pct(p5['win_rate_decisive_ci95'][1])}). "
-            "Both are reported because a fine-tune that produces more ties has not improved "
-            "anything, and the ties-dropped figure hides that.\n")
+            f"resolution agent scored {p5['wins_tuned']}W / {p5['losses_tuned']}L / "
+            f"{p5['ties']}T against the base-prompted agent.\n")
+        add("| framing | win-rate | 95% CI | 50% inside? |")
+        add("|---|---|---|---|")
+        add(f"| ties counted as half | {_pct(p5['win_rate_adjusted'])} | "
+            f"{_pct(lo)}–{_pct(hi)} | {'no — significant' if adj_sig else '**yes — not significant**'} |")
+        add(f"| ties dropped | {_pct(p5['win_rate_decisive'])} | "
+            f"{_pct(dlo)}–{_pct(dhi)} | {'**no — significant**' if dec_sig else 'yes — not significant'} |")
+        add(f"\nExact binomial p on the decisive comparisons = {p5['binomial_p_vs_50pct']}.")
+        if adj_sig != dec_sig:
+            add(f"\n**The two framings disagree, and neither is quoted alone.** With "
+                f"{p5['ties']} of {p5['n']} comparisons tied "
+                f"({_pct(p5['ties'] / p5['n'])}), how ties are treated decides whether this "
+                "result clears significance. A fine-tune that mostly produces ties has not "
+                "improved much, so the conservative reading — ties as half a win, interval "
+                "containing 50% — is the one to carry.")
+
+        scores = p5.get("mean_scores") or {}
+        if scores:
+            t = scores.get("dpo_tuned", {})
+            b = scores.get("base_prompted", {})
+            total_gap = t.get("total", 0) - b.get("total", 0)
+            if total_gap:
+                parts = sorted(
+                    ((d, t.get(d, 0) - b.get(d, 0)) for d in
+                     ("correctness", "completeness", "conciseness", "tone")),
+                    key=lambda kv: -abs(kv[1]),
+                )
+                top, gap = parts[0]
+                add(f"\n**Where the advantage comes from: {_pct(gap / total_gap)} of the "
+                    f"{total_gap:+.3f} total-score gap is {top}.** "
+                    + ", ".join(f"{d} {v:+.3f}" for d, v in parts) + ".")
+        add(f"\nThe tuned arm's responses are {_pct(1 - p5['length_ratio_tuned_over_base'])} "
+            f"shorter than the baseline's ({p5['mean_chars']['dpo_tuned']} vs "
+            f"{p5['mean_chars']['base_prompted']} chars), and wins correlate with being "
+            f"shorter at r = {p5['corr_win_vs_length_delta']}. See the reward-hacking note "
+            "in Phase 5 below.\n")
     else:
         add("_Phase 5 has not been run. No win-rate to report._\n")
 
@@ -247,13 +278,44 @@ def build_report(reports_dir: Path, out: Path) -> Path:
         add(f"- mean response length: {p5['mean_chars']} chars, ratio tuned/base "
             f"{p5['length_ratio_tuned_over_base']}")
         add(f"- **correlation between winning and being shorter than the baseline: "
-            f"{p5['corr_win_vs_length_delta']}** — the reward-hacking check. A strongly negative "
-            "value would mean the tuned arm wins mainly by being terse rather than by being right.\n")
+            f"{p5['corr_win_vs_length_delta']}** — the reward-hacking check.")
+        if p5.get("training_pair_length_ratio"):
+            add(f"- **The tuned model reproduced the training data's length skew.** In the "
+                f"preference pairs the chosen side was "
+                f"{p5['training_pair_length_ratio']}x the length of the rejected side; the "
+                f"tuned arm now writes at {p5['length_ratio_tuned_over_base']}x the baseline's "
+                "length. Those two ratios matching is the clearest single piece of evidence "
+                "that what DPO learned here was substantially *length*.\n")
         add("| category | n | W | T | L | win rate (adj) |")
         add("|---|---|---|---|---|---|")
         for c, row in p5.get("by_category", {}).items():
             add(f"| {c} | {row['n']} | {row['wins']} | {row['ties']} | {row['losses']} | "
                 f"{_pct(row['win_rate_adjusted'])} |")
+        inc = p5.get("inconsistency_diagnosis") or {}
+        if inc:
+            add("\n**Why order-inconsistency is high here (43.6%, against 15.9% in Phase 1 "
+                "labelling).** It is the judge behaving correctly, not failing:\n")
+            add("| verdicts | n | mean score gap | mean \\|length delta\\| |")
+            add("|---|---|---|---|")
+            add(f"| consistent across both orders | {inc['consistent_n']} | "
+                f"{inc['mean_score_gap_consistent']} | "
+                f"{inc['mean_abs_length_delta_consistent']} chars |")
+            add(f"| flipped when the order swapped | {inc['inconsistent_n']} | "
+                f"{inc['mean_score_gap_inconsistent']} | "
+                f"{inc['mean_abs_length_delta_inconsistent']} chars |")
+            add("\nThe judge flips precisely where the two responses are near-equivalent — a "
+                "score gap of 0.3 out of 9. Phase 1 compared two deliberately different "
+                "prompting strategies; the arena compares a model with its own fine-tune. A "
+                "judge that stayed equally decisive as the arms converged would not be "
+                "tracking quality. Those flips are recorded as ties rather than resolved, so "
+                "they widen the interval instead of corrupting the result.")
+        deg = p5.get("degeneracy_check") or {}
+        if deg:
+            add(f"\n**Degeneracy check**: {deg['tuned_under_60_chars']}/{deg['n']} tuned "
+                f"responses are under 60 characters ({deg['base_under_60_chars']}/{deg['n']} "
+                f"for the baseline) and {deg['tuned_empty']} are empty. The tuned model became "
+                "terser, not broken — which is what makes the brevity finding a real behaviour "
+                "change rather than a collapse.")
         add("\n| arm | correctness | completeness | conciseness | tone | total |")
         add("|---|---|---|---|---|---|")
         for arm, row in p5.get("mean_scores", {}).items():

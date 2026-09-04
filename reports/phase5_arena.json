@@ -1,0 +1,104 @@
+{
+  "n": 149,
+  "wins_tuned": 52,
+  "losses_tuned": 32,
+  "ties": 65,
+  "win_rate_adjusted": 0.5671,
+  "win_rate_adjusted_ci95": [
+    0.4869,
+    0.644
+  ],
+  "win_rate_decisive": 0.619,
+  "win_rate_decisive_ci95": [
+    0.5122,
+    0.7155
+  ],
+  "binomial_p_vs_50pct": 0.03753,
+  "significant_at_05": true,
+  "order_inconsistency_rate": 0.4362,
+  "by_category": {
+    "account_access": {
+      "n": 27,
+      "wins": 8,
+      "ties": 13,
+      "losses": 6,
+      "win_rate_adjusted": 0.537
+    },
+    "billing": {
+      "n": 34,
+      "wins": 15,
+      "ties": 12,
+      "losses": 7,
+      "win_rate_adjusted": 0.6176
+    },
+    "product_info": {
+      "n": 27,
+      "wins": 11,
+      "ties": 12,
+      "losses": 4,
+      "win_rate_adjusted": 0.6296
+    },
+    "shipping": {
+      "n": 27,
+      "wins": 10,
+      "ties": 14,
+      "losses": 3,
+      "win_rate_adjusted": 0.6296
+    },
+    "technical": {
+      "n": 34,
+      "wins": 8,
+      "ties": 14,
+      "losses": 12,
+      "win_rate_adjusted": 0.4412
+    }
+  },
+  "mean_scores": {
+    "dpo_tuned": {
+      "correctness": 0.527,
+      "completeness": 0.346,
+      "conciseness": 1.463,
+      "tone": 1.141,
+      "total": 3.477
+    },
+    "base_prompted": {
+      "correctness": 0.473,
+      "completeness": 0.315,
+      "conciseness": 1.114,
+      "tone": 1.148,
+      "total": 3.05
+    }
+  },
+  "mean_chars": {
+    "dpo_tuned": 373.3,
+    "base_prompted": 546.3
+  },
+  "length_ratio_tuned_over_base": 0.683,
+  "corr_win_vs_length_delta": -0.2783,
+  "shown_first_distribution": {
+    "base_prompted": 85,
+    "dpo_tuned": 64
+  },
+  "judge_model": "deepseek-v4-pro:cloud",
+  "rubric_version": "v1",
+  "rubric_fingerprint": "f14d5cd4800b",
+  "tuned_arm": "artifacts/dpo/checkpoint",
+  "base_arm": "Qwen/Qwen2.5-0.5B-Instruct",
+  "temperature": 0.0,
+  "max_tokens": 220,
+  "inconsistency_diagnosis": {
+    "consistent_n": 84,
+    "inconsistent_n": 65,
+    "mean_score_gap_consistent": 1.786,
+    "mean_score_gap_inconsistent": 0.285,
+    "mean_abs_length_delta_consistent": 361,
+    "mean_abs_length_delta_inconsistent": 133
+  },
+  "degeneracy_check": {
+    "tuned_under_60_chars": 2,
+    "base_under_60_chars": 1,
+    "tuned_empty": 0,
+    "n": 149
+  },
+  "training_pair_length_ratio": 0.662
+}

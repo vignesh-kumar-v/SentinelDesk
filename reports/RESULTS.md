@@ -1,10 +1,23 @@
 # SentinelDesk — Results
 
-_Generated 2026-09-04 14:36 UTC from the phase reports in this directory. Regenerate with `make report`._
+_Generated 2026-09-04 18:37 UTC from the phase reports in this directory. Regenerate with `make report`._
 
 ## Headline
 
-_Phase 5 has not been run. No win-rate to report._
+On 149 held-out tickets, judged blind in both display orders, the DPO-tuned resolution agent scored 52W / 32L / 65T against the base-prompted agent.
+
+| framing | win-rate | 95% CI | 50% inside? |
+|---|---|---|---|
+| ties counted as half | 56.7% | 48.7%–64.4% | **yes — not significant** |
+| ties dropped | 61.9% | 51.2%–71.5% | **no — significant** |
+
+Exact binomial p on the decisive comparisons = 0.03753.
+
+**The two framings disagree, and neither is quoted alone.** With 65 of 149 comparisons tied (43.6%), how ties are treated decides whether this result clears significance. A fine-tune that mostly produces ties has not improved much, so the conservative reading — ties as half a win, interval containing 50% — is the one to carry.
+
+**Where the advantage comes from: 81.7% of the +0.427 total-score gap is conciseness.** conciseness +0.349, correctness +0.054, completeness +0.031, tone -0.007.
+
+The tuned arm's responses are 31.7% shorter than the baseline's (373.3 vs 546.3 chars), and wins correlate with being shorter at r = -0.2783. See the reward-hacking note in Phase 5 below.
 
 
 ## Phase 0 — DPO loop verified on a toy batch
@@ -96,5 +109,34 @@ Validation split: 34 pairs, so the standard error on eval accuracy is about 0.08
 
 ## Phase 5 — Blind win-rate, held-out
 
-_not run_
+- tuned arm: `artifacts/dpo/checkpoint`; base arm: `Qwen/Qwen2.5-0.5B-Instruct`
+- both arms: identical system prompt, identical retrieved policies, temperature 0.0, max 220 tokens. The only difference is the weights.
+- judge `deepseek-v4-pro:cloud`, rubric `v1` — the same rubric as Phase 1, unrevised
+- order-inconsistency rate in the arena: 43.6%
+- mean response length: {'dpo_tuned': 373.3, 'base_prompted': 546.3} chars, ratio tuned/base 0.683
+- **correlation between winning and being shorter than the baseline: -0.2783** — the reward-hacking check.
+- **The tuned model reproduced the training data's length skew.** In the preference pairs the chosen side was 0.662x the length of the rejected side; the tuned arm now writes at 0.683x the baseline's length. Those two ratios matching is the clearest single piece of evidence that what DPO learned here was substantially *length*.
 
+| category | n | W | T | L | win rate (adj) |
+|---|---|---|---|---|---|
+| account_access | 27 | 8 | 13 | 6 | 53.7% |
+| billing | 34 | 15 | 12 | 7 | 61.8% |
+| product_info | 27 | 11 | 12 | 4 | 63.0% |
+| shipping | 27 | 10 | 14 | 3 | 63.0% |
+| technical | 34 | 8 | 14 | 12 | 44.1% |
+
+**Why order-inconsistency is high here (43.6%, against 15.9% in Phase 1 labelling).** It is the judge behaving correctly, not failing:
+
+| verdicts | n | mean score gap | mean \|length delta\| |
+|---|---|---|---|
+| consistent across both orders | 84 | 1.786 | 361 chars |
+| flipped when the order swapped | 65 | 0.285 | 133 chars |
+
+The judge flips precisely where the two responses are near-equivalent — a score gap of 0.3 out of 9. Phase 1 compared two deliberately different prompting strategies; the arena compares a model with its own fine-tune. A judge that stayed equally decisive as the arms converged would not be tracking quality. Those flips are recorded as ties rather than resolved, so they widen the interval instead of corrupting the result.
+
+**Degeneracy check**: 2/149 tuned responses are under 60 characters (1/149 for the baseline) and 0 are empty. The tuned model became terser, not broken — which is what makes the brevity finding a real behaviour change rather than a collapse.
+
+| arm | correctness | completeness | conciseness | tone | total |
+|---|---|---|---|---|---|
+| dpo_tuned | 0.53 | 0.35 | 1.46 | 1.14 | 3.48 |
+| base_prompted | 0.47 | 0.32 | 1.11 | 1.15 | 3.05 |

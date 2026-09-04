@@ -382,3 +382,97 @@ samples from one model are genuinely near-equivalent, so the judge has less to g
 and flips more often when the order changes. A judge whose inconsistency stayed flat
 between "these differ" and "these are identical" would be one whose verdicts were not
 tracking response quality at all.
+
+## F9 — The Phase 5 result: DPO learned brevity
+
+**52W / 32L / 65T on 149 held-out tickets, judged blind in both display orders.**
+
+| framing | win-rate | 95% CI | 50% inside? |
+|---|---|---|---|
+| ties counted as half | 56.7% | 48.7–64.4% | **yes — not significant** |
+| ties dropped | 61.9% | 51.2–71.5% | no — significant (p = 0.038) |
+
+The two framings disagree, and which one is quoted decides whether this clears
+significance. With 65 of 149 comparisons tied, the conservative reading is the honest
+one: a fine-tune that mostly produces ties has not improved much. **The headline is
+56.7%, an interval that contains 50%.**
+
+### What actually improved
+
+| dimension | tuned | base | gap | share of total gap |
+|---|---|---|---|---|
+| conciseness | 1.46 | 1.11 | **+0.349** | **81.7%** |
+| correctness | 0.53 | 0.47 | +0.054 | 12.6% |
+| completeness | 0.35 | 0.32 | +0.031 | 7.3% |
+| tone | 1.14 | 1.15 | −0.007 | −1.6% |
+
+Four fifths of the advantage is conciseness. Correctness — the dimension the rubric
+was built to make decisive, and the one that matters for a support agent — moved by
+0.054 on a 0-3 scale.
+
+### The three pre-registered predictions all held
+
+Each was written down before this run, in F4, F7 and F8.
+
+**F4, the length confound.** The preference pairs had the chosen side at 0.662x the
+length of the rejected side. The tuned model now writes at **0.683x** the baseline's
+length. Those ratios matching to within two points is the clearest single piece of
+evidence that what DPO extracted from this data was substantially *length*. Wins also
+correlate with being shorter (r = −0.278).
+
+**F7, the falling implicit rewards.** The prediction was that preference accuracy on
+held-out *pairs* and win-rate on held-out *tickets* could diverge, because `r_chosen`
+was decreasing. Pair accuracy rose 0.47 → 0.62, a 15-point gain. Ticket win-rate is
+56.7% with 50% inside the interval. They diverged.
+
+**F8, the noise floor.** The A/A null test returned 0.617 from two runs of *identical*
+weights. The real result, 56.7%, sits **below** that point estimate. The A/A ran on 30
+tickets and the arena on 149, so the intervals differ — but it is a useful reminder of
+how little a mid-50s win-rate is worth on samples this size.
+
+### Why order-inconsistency is 43.6% here, against 15.9% in Phase 1
+
+Not a defect. The judge flips exactly where there is nothing to choose between:
+
+| verdicts | n | mean score gap | mean abs length delta |
+|---|---|---|---|
+| consistent across both orders | 84 | 1.786 | 361 chars |
+| flipped when order swapped | 65 | **0.285** | 133 chars |
+
+Phase 1 compared two deliberately different prompting strategies. The arena compares a
+model with its own fine-tune, and they are close. A judge that stayed equally decisive
+as the arms converged would not be tracking quality at all. Those flips are recorded
+as ties rather than resolved, so they widen the interval instead of corrupting the
+number.
+
+### Not degeneracy
+
+2 of 149 tuned responses are under 60 characters (1 of 149 for the baseline) and none
+are empty. The model became genuinely terser, not broken. That matters for the
+reading: this is a real behaviour change that the judge rewards, not a collapse that
+happens to score well.
+
+### The honest summary
+
+DPO on 344 judge-labelled preference pairs moved a 0.5B support agent from 3.05 to
+3.48 on a 9-point rubric, and roughly four fifths of that came from writing less. The
+blueprint named this failure mode in advance — "reward hacking toward short-but-unhelpful
+responses is a classic one" — and it is what happened, in a mild form: the responses are
+shorter and slightly *more* correct, not shorter and emptier.
+
+The cause is visible in the data rather than mysterious. The `rushed` candidate
+strategy was verbose by construction and lost two thirds of the time, so brevity and
+preference were correlated in the training pairs before any training ran. The rubric
+named length as a non-criterion, which governs how the judge *scores* but cannot
+decorrelate what the two strategies *produce*. Fixing this needs a change at the data
+level — length-matched candidate strategies, or a length penalty in pair selection —
+not a better rubric.
+
+### What would make the correctness result conclusive
+
+Roughly a third of the training pairs carry no correctness signal at all: the two
+sides score identically on correctness in 31% and both score zero in 26%. A 0.5B model
+answering policy questions is wrong most of the time either way, which caps how much
+correctness gradient exists to extract. The realistic paths are a larger base model, a
+best-of-n candidate scheme that surfaces occasional correct responses, or many more
+pairs — not more epochs on this data.
