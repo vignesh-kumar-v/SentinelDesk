@@ -118,3 +118,33 @@ project was on `sys.path[0]`, and it shadowed the real module as a namespace
 package. Running the identical script from a different directory resolves `ray`
 correctly. The lesson is narrow and practical: scratch scripts do not belong in a
 shared temp directory.
+
+## F2 — vLLM does run here, in a linux/arm64 container
+
+The macOS-native deadlock in F1 was never resolved; it was routed around. The same
+vLLM CPU backend, built for `linux/arm64` and run under Docker, starts and serves
+normally — which is itself evidence for the F1 diagnosis, since the only thing that
+changed is the OS runtime underneath the same code.
+
+Two more failures on the way there, both worth recording because neither announces
+itself as what it is:
+
+**The container build died with `cannot allocate memory`.** vLLM's `Dockerfile.cpu`
+compiles with every available core. Docker Desktop here exposes 15 CPUs against
+about 8 GB, and fifteen parallel compiles of vLLM's kernels exhaust it. `setup.py`
+honours `MAX_JOBS`, but the upstream Dockerfile declares no `ARG` for it, so
+`scripts/build_vllm_docker.sh` patches a copy to add one and leaves the vendored
+source alone. The patch asserts the stage it targets still exists, so a vLLM version
+bump fails loudly rather than quietly producing an unpatched build.
+
+**The image reproduced both dependency failures from F1 exactly.** torchaudio 2.11
+against torch 2.8, and transformers 5.16 — the same two open version ranges, resolved
+the same wrong way, killing the server at import rather than at install. They are
+pinned in `docker/Dockerfile.vllm-pins`, a thin layer on top of the built image so
+that adjusting a pin does not invalidate the kernel compile.
+
+The practical lesson is about the shape of these bugs rather than any one of them:
+every failure in F1 and F2 surfaced far from its cause. An unpinned transitive
+dependency became a `dlopen` symbol error inside a running server. A missing build
+dependency became what looked like a vLLM packaging bug. A memory limit became what
+looked like a compiler failure. The version constraint is the thing to read first.
