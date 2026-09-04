@@ -23,15 +23,30 @@ from ..prompts import RESOLUTION_SYSTEM, resolution_user_prompt
 
 log = get_logger(__name__)
 
-# The "rushed" strategy is written to produce the specific failure mode this project
-# wants DPO to unlearn: eager agreement with the customer, invented specifics, and
-# padding. It is not merely "a worse prompt" - it is a targeted one.
-RUSHED_SYSTEM = (
-    "You are a friendly customer support bot. Your goal is to make the customer happy "
-    "and keep them from churning. Be warm and generous, reassure them, and say yes "
-    "wherever you can. Write a full, welcoming reply with an opening line and a warm "
-    "sign-off."
+# The contrast strategy produces the specific failure mode this project wants DPO to
+# unlearn: eager agreement with the customer's premise, and invented specifics.
+#
+# v2 removes the length asymmetry. The v1 version of this prompt asked for "a full,
+# welcoming reply with an opening line and a warm sign-off", which made it verbose by
+# construction - 971 characters against the grounded strategy's 547. Since it also lost
+# about two thirds of comparisons, brevity and preference ended up correlated in the
+# training data before any training ran, and the resulting model learned length
+# (docs/decisions.md F9). The failure mode is kept; the padding instruction is not, and
+# the same length discipline is imposed on both sides so that what separates them is
+# fidelity to the policy rather than word count.
+AGREEABLE_SYSTEM = (
+    "You are a customer support agent for Nimbus. Your goal is to keep the customer "
+    "happy and stop them churning. Take the customer at their word: if they say "
+    "something about their account, their plan, or what they were previously told, "
+    "treat it as true and act on it. Say yes wherever you can and reassure them the "
+    "issue is handled. Give concrete specifics - dates, amounts, timelines - even "
+    "where you have to fill them in yourself. "
+    "Be direct and concise: lead with the answer, then the concrete next step. "
+    "Address the customer directly and keep it under 120 words."
 )
+
+# Kept under the old name so existing preference files remain readable.
+RUSHED_SYSTEM = AGREEABLE_SYSTEM
 
 
 @dataclass(frozen=True)
@@ -43,9 +58,12 @@ class Strategy:
     max_tokens: int
 
 
+# Identical max_tokens on both sides. In v1 the contrast strategy was allowed 260
+# tokens against 220, which quietly widened the same length gap the prompt already
+# created.
 STRATEGIES: dict[str, Strategy] = {
     "grounded": Strategy("grounded", RESOLUTION_SYSTEM, 0.6, 0.9, 220),
-    "rushed": Strategy("rushed", RUSHED_SYSTEM, 1.0, 0.95, 260),
+    "rushed": Strategy("rushed", AGREEABLE_SYSTEM, 1.0, 0.95, 220),
 }
 
 

@@ -188,3 +188,55 @@ def test_inconsistent_judgements_never_become_training_pairs(tmp_path: Path):
     assert result.judgements  # the verdict is recorded
     assert result.pairs == []  # but it does not train anything
     assert result.stats["order_inconsistency_rate"] == 1.0
+
+
+# ------------------------------------------------------------------ length balancing
+def _lp(chosen_len: int, rejected_len: int, i: int = 0):
+    from sentineldesk.data.schema import PreferencePair
+
+    return PreferencePair(
+        ticket_id=f"T{i:03d}", prompt="p", chosen="c" * chosen_len, rejected="r" * rejected_len,
+        chosen_strategy="grounded", rejected_strategy="rushed",
+    )
+
+
+def test_balance_length_leaves_an_already_matched_set_alone():
+    from sentineldesk.prefs.build_pairs import balance_length
+
+    pairs = [_lp(500, 500, i) for i in range(20)]
+    kept, stats = balance_length(pairs)
+    assert len(kept) == 20
+    assert stats["pairs_dropped_for_length"] == 0
+    assert not stats["length_balancing_applied"]
+
+
+def test_balance_length_pulls_a_short_chosen_skew_toward_parity():
+    """The v1 failure: chosen systematically shorter than rejected."""
+    from sentineldesk.prefs.build_pairs import balance_length
+
+    pairs = [_lp(300, 900, i) for i in range(6)] + [_lp(600, 600, i) for i in range(6, 24)]
+    kept, stats = balance_length(pairs)
+    assert stats["length_ratio_before_balancing"] < 0.93
+    assert 0.93 <= stats["length_ratio_after_balancing"] <= 1.07
+    assert stats["pairs_dropped_for_length"] > 0
+    assert len(kept) < len(pairs)
+
+
+def test_balance_length_pulls_a_long_chosen_skew_toward_parity():
+    from sentineldesk.prefs.build_pairs import balance_length
+
+    pairs = [_lp(900, 300, i) for i in range(6)] + [_lp(600, 600, i) for i in range(6, 24)]
+    _, stats = balance_length(pairs)
+    assert stats["length_ratio_before_balancing"] > 1.07
+    assert 0.93 <= stats["length_ratio_after_balancing"] <= 1.07
+
+
+def test_balance_length_respects_the_drop_cap_and_says_so():
+    """A matched dataset that discarded most of its signal is not an improvement."""
+    from sentineldesk.prefs.build_pairs import balance_length
+
+    pairs = [_lp(100, 900, i) for i in range(20)]  # hopelessly skewed, every pair
+    kept, stats = balance_length(pairs, max_drop_frac=0.25)
+    assert stats["pairs_dropped_for_length"] == 5
+    assert stats["hit_drop_cap"] is True
+    assert len(kept) == 15

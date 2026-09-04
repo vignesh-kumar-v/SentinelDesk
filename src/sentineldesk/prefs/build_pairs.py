@@ -148,6 +148,7 @@ def build_pairs(
     tokenizer=None,
     concurrency: int = 4,
     min_margin: float = 0.0,
+    balance_length_ratio: bool = False,
 ) -> PairBuildResult:
     names = list(STRATEGIES)
     cand_path = out_dir / "candidates.jsonl"
@@ -205,13 +206,78 @@ def build_pairs(
             )
         )
 
+    balance_stats: dict = {"length_balancing_applied": False}
+    if balance_length_ratio and pairs:
+        pairs, balance_stats = balance_length(pairs)
+        if balance_stats["pairs_dropped_for_length"]:
+            log.info(
+                "length balancing: dropped %d pairs, ratio %.3f -> %.3f",
+                balance_stats["pairs_dropped_for_length"],
+                balance_stats["length_ratio_before_balancing"],
+                balance_stats["length_ratio_after_balancing"],
+            )
+
     by_strategy = {n: [index[(n, t.id)] for t in tickets if (n, t.id) in index] for n in names}
     return PairBuildResult(
         pairs=pairs,
         candidates=[c for cs in by_strategy.values() for c in cs],
         judgements=judgements,
-        stats=summarise(tickets, by_strategy, judgements, pairs, meta),
+        stats=summarise(tickets, by_strategy, judgements, pairs, meta) | balance_stats,
     )
+
+
+def balance_length(
+    pairs: list[PreferencePair],
+    *,
+    lo: float = 0.93,
+    hi: float = 1.07,
+    max_drop_frac: float = 0.25,
+) -> tuple[list[PreferencePair], dict]:
+    """Trim the most length-skewed pairs until chosen/rejected length is near parity.
+
+    A backstop, not the fix. The fix is length-matched candidate strategies upstream;
+    this exists because who *wins* is decided by the judge, so even balanced strategies
+    can leave a skew in the surviving pairs if one side systematically wins its longer
+    or shorter examples.
+
+    Pairs are dropped greedily from whichever tail is pulling the aggregate ratio away
+    from 1.0, most extreme first. Dropping is capped, because a matched dataset that
+    has thrown away a quarter of its signal is not obviously better than a slightly
+    skewed one that kept it - and the cap being hit is itself worth reporting.
+    """
+    import math
+
+    def ratio(rows: list[PreferencePair]) -> float:
+        c = statistics.mean(len(p.chosen) for p in rows)
+        r = statistics.mean(len(p.rejected) for p in rows)
+        return c / r if r else 1.0
+
+    kept = list(pairs)
+    start = ratio(kept)
+    max_drop = int(len(pairs) * max_drop_frac)
+    dropped = 0
+
+    while dropped < max_drop and len(kept) > 2:
+        current = ratio(kept)
+        if lo <= current <= hi:
+            break
+        # If chosen is running short overall, drop the pair where chosen is shortest
+        # relative to rejected; if long, drop the opposite extreme.
+        skew_short = current < lo
+        victim = (min if skew_short else max)(
+            kept, key=lambda p: math.log(max(len(p.chosen), 1) / max(len(p.rejected), 1))
+        )
+        kept.remove(victim)
+        dropped += 1
+
+    return kept, {
+        "length_balancing_applied": dropped > 0,
+        "pairs_dropped_for_length": dropped,
+        "hit_drop_cap": dropped >= max_drop,
+        "length_ratio_before_balancing": round(start, 4),
+        "length_ratio_after_balancing": round(ratio(kept), 4),
+        "balance_target": [lo, hi],
+    }
 
 
 def summarise(

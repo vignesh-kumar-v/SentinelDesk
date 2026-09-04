@@ -84,6 +84,9 @@ def build_pairs_cmd(
     batch_size: int = typer.Option(16),
     concurrency: int = typer.Option(8, help="parallel judge calls"),
     min_margin: float = typer.Option(0.0, help="drop pairs whose score gap is below this"),
+    balance_length: bool = typer.Option(
+        False, help="trim length-skewed pairs until chosen/rejected length is near parity"
+    ),
     out_dir: Path = typer.Option(Path("data/prefs")),
 ) -> None:
     """PHASE 1b/c: two candidates per ticket, judged in both orders, into DPO pairs."""
@@ -104,6 +107,7 @@ def build_pairs_cmd(
     result = build_pairs(
         tickets, gen, build_judge(), out_dir=out_dir, tokenizer=gen.tokenizer,
         concurrency=concurrency, min_margin=min_margin,
+        balance_length_ratio=balance_length,
     )
     persist(result, out_dir, Paths.reports)
 
