@@ -35,6 +35,7 @@ class ChatResult:
     completion_tokens: int = 0
     latency_s: float = 0.0
     model: str = ""
+    finish_reason: str = ""
     # Reasoning models (deepseek-v4, kimi, glm) return this alongside content.
     # We keep it for trace/debug but never feed it back into a prompt.
     reasoning: str = ""
@@ -108,6 +109,7 @@ class ChatClient:
                     completion_tokens=int(usage.get("completion_tokens") or 0),
                     latency_s=time.perf_counter() - t0,
                     model=data.get("model", payload["model"]),
+                    finish_reason=data["choices"][0].get("finish_reason") or "",
                     reasoning=(msg.get("reasoning") or "").strip(),
                 )
             except Exception as exc:  # noqa: BLE001 - retry on anything transport-ish
@@ -147,7 +149,15 @@ class ChatClient:
             obj = extract_json(res.text)
             if obj is not None and all(k in obj for k in required_keys):
                 return obj, res
-            log.warning("unparseable/incomplete JSON on attempt %d: %r", i + 1, res.text[:160])
+            # finish_reason and the reasoning length are what distinguish the two
+            # causes of an empty reply: a reasoning model that spent the whole token
+            # budget thinking ("length"), versus a transient empty completion from
+            # the provider ("stop"). They call for different fixes, and without this
+            # they look identical in the log.
+            log.warning(
+                "unparseable/incomplete JSON on attempt %d (finish=%s, %d reasoning chars): %r",
+                i + 1, res.finish_reason, len(res.reasoning), res.text[:160],
+            )
         raise LLMError(f"no valid JSON after {attempts} attempts; last reply: {last.text[:300] if last else ''}")
 
     # ------------------------------------------------------------------ batch
