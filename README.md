@@ -165,12 +165,21 @@ src/sentineldesk/
               dataset.py       chat-template tokenisation + prompt masking
   agents/     graph.py         the LangGraph pipeline
               confidence.py    rule-based gate with named reasons
-  serving/    vllm_server.py   vLLM process management
+  serving/    vllm_server.py   vLLM process management (docker + native backends)
               local.py         batched transformers baseline
               bench.py         throughput/latency, sequential and concurrent
   eval/       arena.py         the blind head-to-head
               stats.py         Wilson intervals, exact binomial, Pearson
+  guardrails/ rails.py         NeMo topic rails + deterministic checks
+              pii.py           regex PII detection, Luhn-checked cards
+              schema.py        response validation, invented-policy-id check
+              evaluate.py      TPR/FPR against labelled adversarial cases
+  observability/tracing.py     Langfuse, one typed observation per graph hop
+configs/guardrails/            rail config + the labelled adversarial set
+docker/                        vLLM image pins, self-hosted Langfuse stack
+terraform/                     vLLM on ECS Fargate behind an ALB
 scripts/build_vllm_macos.sh    vLLM CPU build for Apple silicon
+scripts/build_vllm_docker.sh   vLLM CPU image for linux/arm64 (the one that serves)
 ```
 
 ---
@@ -195,6 +204,17 @@ make graph-check # PHASE 3  gate: routing behaviour on sample tickets
 make bench       # PHASE 4  tokens/s and latency across backends
 make arena       # PHASE 5  blind win-rate on held-out tickets
 make report      # regenerate reports/RESULTS.md
+```
+
+Stretch phases:
+
+```bash
+make guardrails   # PHASE 6 gate: score the rails on labelled adversarial + benign cases
+make langfuse-up  # start self-hosted Langfuse, then
+make trace        # PHASE 7 gate: traced tickets, read back off the server
+make tf-plan      # PHASE 8: validate + plan (free)
+make tf-apply     # BILLABLE — see terraform/README.md
+make tf-destroy
 ```
 
 `make test` runs the suite; `make lint` runs ruff.
@@ -225,6 +245,34 @@ The script handles three failures that do not announce themselves; they and the 
 runtime status are documented in [docs/decisions.md](docs/decisions.md) under **F1**.
 
 ---
+
+## Guardrails, tracing and infrastructure
+
+**Guardrails (Phase 6)** are split by what kind of question each check answers. PII is
+regex — auditable, microseconds, cannot be prompt-injected, and card numbers are
+Luhn-checked so a 16-digit order reference survives. Topic and jailbreak rails are NeMo
+Guardrails, because "is this an instruction override" has fuzzy edges. Schema is
+pydantic, including a check for cited policy ids that do not exist — a fabricated
+"[BIL-09]" reads as authoritative and is unfalsifiable to a customer. The rail model is
+deliberately not the resolution model.
+
+Scored against a labelled set rather than demonstrated: **95% true-positive rate at 0%
+false-positive rate**. The FPR is the number worth defending — the benign half is built
+to be hostile to an over-eager rail (furious customers, cancellation threats, requests
+support must decline), because a rail that blocks everything scores a perfect TPR and
+takes a support queue offline.
+
+**Tracing (Phase 7)** gives each hop a typed Langfuse observation rather than a generic
+span: retrieval is a `retriever`, the rails are `guardrail`s, resolution is a
+`generation` carrying model and token counts. Verified by fetching traces back through
+the public API — the first run reported success from the SDK while storing nothing,
+because Langfuse uploads asynchronously and the failure never reached the client.
+Tracing degrades to a no-op when Langfuse is absent and records why.
+
+**Infrastructure (Phase 8)** is the same arm64 vLLM image on ECS Fargate behind an ALB.
+`terraform apply` and `terraform destroy` were both run against a real account — 15
+resources up, 15 down, confirmed through the AWS API rather than Terraform's exit code.
+See `terraform/README.md` for the cost and security trade-offs it makes explicit.
 
 ## Limitations
 
