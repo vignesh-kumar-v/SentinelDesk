@@ -1,6 +1,6 @@
 # SentinelDesk — Results
 
-_Generated 2026-09-04 07:35 UTC from the phase reports in this directory. Regenerate with `make report`._
+_Generated 2026-09-04 07:45 UTC from the phase reports in this directory. Regenerate with `make report`._
 
 ## Headline
 
@@ -28,8 +28,10 @@ _not run_
 
 ## Phase 3 — Agent graph
 
-_not run_
-
+- 10 tickets end-to-end through triage -> retrieve -> resolution -> gate
+- triage accuracy vs the ticket's true category: **100.0%**
+- escalation rate 20.0% (2/10)
+- resolver backend: remote
 
 ## Phase 4 — Serving
 
