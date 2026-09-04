@@ -148,3 +148,46 @@ every failure in F1 and F2 surfaced far from its cause. An unpinned transitive
 dependency became a `dlopen` symbol error inside a running server. A missing build
 dependency became what looked like a vLLM packaging bug. A memory limit became what
 looked like a compiler failure. The version constraint is the thing to read first.
+
+## F3 — Interim read on the preference data, recorded before the arena runs
+
+Written at 83 of 445 comparisons judged, deliberately before any Phase 5 number
+exists, so that whatever the arena says later cannot be dressed up as having been
+expected.
+
+**Order-inconsistency is 22.9%.** Nearly a quarter of comparisons flip when the two
+responses swap display position. Those are dropped rather than resolved, so they do
+not poison training — but the rate is the honest ceiling on this judge. A Phase 5
+win-rate inside a few points of 50% would not be distinguishable from this noise, and
+should not be reported as if it were.
+
+**A first read of the aggregate scores was misleading, and the correction matters.**
+Averaged across every comparison, the two candidate strategies look nearly identical
+on correctness (0.44 vs 0.48 out of 3) while differing a lot on total (2.72 vs 1.39).
+Read that way it says the preference is driven by style, and DPO is about to learn
+tone — the exact failure the rubric's correctness override was written to prevent.
+
+Per-pair, on the pairs that actually become training data, it is the opposite:
+
+| dimension | mean winner−loser gap | favours winner in |
+|---|---|---|
+| correctness | +0.797 | 75% of pairs |
+| conciseness | +0.547 | 59% |
+| tone | +0.320 | 52% |
+| completeness | +0.102 | 22% |
+
+Correctness is the largest separator and decides three pairs in four. The aggregate
+means hid it because on-policy sampling makes the two strategies similar *on average*
+while differing per instance — which is what on-policy preference data is supposed to
+look like. Comparing strategy means answers a much weaker question than comparing
+sides within a pair, and it is the within-pair comparison that describes the gradient.
+
+This analysis is now computed in `summarise()` and printed in the results report,
+rather than living in a one-off script, because it is the check on whether the rubric
+did its job.
+
+**What is genuinely weak.** Both candidates score 0 on correctness in 20% of usable
+pairs, and correctness is identical on both sides in 25%. In that quarter of the data
+the gradient really is coming from style alone. That is a property of a 0.5B model
+answering policy questions, not of the rubric, and it caps how much correctness signal
+DPO can extract here however good the labelling is.

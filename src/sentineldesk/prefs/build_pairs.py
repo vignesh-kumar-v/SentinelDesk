@@ -234,6 +234,7 @@ def summarise(
 
     chosen_len = [len(p.chosen) for p in pairs]
     rejected_len = [len(p.rejected) for p in pairs]
+    separation = dimension_separation(judgements)
     return {
         **meta,
         "tickets": len(tickets),
@@ -246,6 +247,12 @@ def summarise(
         "usable_pairs": len(pairs),
         "pair_yield": round(len(pairs) / n, 4) if n else 0.0,
         "mean_scores_by_strategy": dim_means,
+        # Which rubric dimension actually decided the labels DPO will train on.
+        # Comparing strategy means across the whole set answers a different and
+        # much weaker question: two strategies can have near-identical average
+        # correctness while differing on correctness in most individual pairs,
+        # which is exactly what on-policy sampling produces.
+        "dimension_separation": separation,
         "strategy_as_chosen": dict(Counter(p.chosen_strategy for p in pairs)),
         "mean_margin": round(statistics.mean(p.margin for p in pairs), 3) if pairs else 0.0,
         # Length bias check: if chosen is systematically much longer or shorter than
@@ -268,3 +275,37 @@ def persist(result: PairBuildResult, out_dir: Path, reports_dir: Path) -> None:
     # run; only the derived pair set and the stats are rewritten here.
     write_jsonl(out_dir / "pairs.jsonl", result.pairs)
     dump_json(reports_dir / "phase1_pairs.json", result.stats)
+
+
+def dimension_separation(judgements: list[PairJudgement]) -> dict:
+    """Per-dimension winner-minus-loser gap, over the pairs that become training data.
+
+    This is the check on whether the rubric's correctness override is doing its job.
+    If conciseness or tone separates the pairs and correctness does not, DPO is about
+    to learn house style, and any win-rate it produces would be measuring that.
+    """
+    usable = [j for j in judgements if j.consistent and j.loser is not None]
+    if not usable:
+        return {}
+    out: dict[str, dict[str, float]] = {}
+    for d in DIMENSIONS:
+        gaps = []
+        for j in usable:
+            loser = j.loser
+            assert loser is not None
+            gaps.append(j.scores[j.winner][d] - j.scores[loser][d])
+        favours = sum(1 for g in gaps if g > 0)
+        out[d] = {
+            "mean_gap": round(statistics.mean(gaps), 3),
+            "favours_winner_frac": round(favours / len(gaps), 3),
+        }
+    both_zero = sum(
+        1 for j in usable if all(sc["correctness"] == 0 for sc in j.scores.values())
+    )
+    identical = sum(
+        1 for j in usable if len({sc["correctness"] for sc in j.scores.values()}) == 1
+    )
+    out["_n_usable"] = len(usable)
+    out["_correctness_identical_frac"] = round(identical / len(usable), 3)
+    out["_both_incorrect_frac"] = round(both_zero / len(usable), 3)
+    return out

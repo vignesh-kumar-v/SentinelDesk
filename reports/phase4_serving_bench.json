@@ -1,0 +1,66 @@
+{
+  "n_requests": 24,
+  "max_tokens": 160,
+  "results": [
+    {
+      "backend": "vllm-cpu",
+      "mode": "sequential",
+      "n_requests": 24,
+      "concurrency": 1,
+      "wall_clock_s": 205.71,
+      "output_tokens": 3538,
+      "throughput_tok_s": 17.199,
+      "latency_p50_s": 9.0049,
+      "latency_p95_s": 10.3249,
+      "latency_mean_s": 8.5712,
+      "errors": 0,
+      "notes": "",
+      "extra": {}
+    },
+    {
+      "backend": "vllm-cpu",
+      "mode": "concurrent-8",
+      "n_requests": 24,
+      "concurrency": 8,
+      "wall_clock_s": 32.6576,
+      "output_tokens": 3155,
+      "throughput_tok_s": 96.6084,
+      "latency_p50_s": 10.4057,
+      "latency_p95_s": 12.0744,
+      "latency_mean_s": 9.244,
+      "errors": 0,
+      "notes": "",
+      "extra": {}
+    },
+    {
+      "backend": "transformers-mps",
+      "mode": "batched-8",
+      "n_requests": 24,
+      "concurrency": 8,
+      "wall_clock_s": 28.4195,
+      "output_tokens": 2364,
+      "throughput_tok_s": 83.1823,
+      "latency_p50_s": 1.1841,
+      "latency_p95_s": 1.1841,
+      "latency_mean_s": 1.1841,
+      "errors": 0,
+      "notes": "static batching: every request in a batch waits for the slowest to finish, so per-request latency here is an average, not a real per-request measurement",
+      "extra": {}
+    },
+    {
+      "backend": "mlx-metal",
+      "mode": "sequential",
+      "n_requests": 8,
+      "concurrency": 1,
+      "wall_clock_s": 4.9674,
+      "output_tokens": 654,
+      "throughput_tok_s": 131.6584,
+      "latency_p50_s": 0.4167,
+      "latency_p95_s": 1.5644,
+      "latency_mean_s": 0.6206,
+      "errors": 0,
+      "notes": "mlx_lm has no continuous batching; sequential is the only regime it offers here",
+      "extra": {}
+    }
+  ]
+}

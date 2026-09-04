@@ -90,6 +90,23 @@ def build_report(reports_dir: Path, out: Path) -> Path:
         add(f"- mean rubric scores by strategy: {json.dumps(p1p['mean_scores_by_strategy'])}")
         add(f"- length ratio chosen/rejected: {p1p['length_ratio_chosen_over_rejected']} "
             "(a ratio far from 1.0 means DPO would learn length before it learns correctness)")
+        sep = p1p.get("dimension_separation") or {}
+        if sep:
+            add("")
+            add("**Which rubric dimension actually decided the training labels** "
+                f"(over the {sep.get('_n_usable', 0)} usable pairs). If tone or conciseness "
+                "separated them and correctness did not, DPO would be learning house style "
+                "and any win-rate would be measuring that instead.\n")
+            add("| dimension | mean winner−loser gap | favours winner in |")
+            add("|---|---|---|")
+            for d in ("correctness", "completeness", "conciseness", "tone"):
+                if d in sep:
+                    add(f"| {d} | {sep[d]['mean_gap']:+.3f} | "
+                        f"{_pct(sep[d]['favours_winner_frac'])} of pairs |")
+            add("")
+            add(f"- correctness was identical on both sides in "
+                f"{_pct(sep.get('_correctness_identical_frac', 0))} of pairs; both sides scored "
+                f"0 on correctness in {_pct(sep.get('_both_incorrect_frac', 0))}")
     if p1s:
         add(f"- **second-judge cross-check**: `{p1s['second_judge']}` re-labelled {p1s['n']} of the "
             f"same comparisons — raw agreement {_pct(p1s['raw_agreement'])}, "

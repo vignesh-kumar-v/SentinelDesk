@@ -63,3 +63,10 @@
                   reply:                                                        
 00:31:33 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
 00:31:42 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:32:28 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:32:59 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:33:08 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:33:21 WARNING  unparseable/incomplete JSON on attempt 1: '{"a":              
+                  {"correctness": 0, "completeness": 0, "conciseness": 0,       
+                  "tone": 1},\n  "b": {"correctness": 0, "completeness": 1,     
+                  "conciseness'                                                 
