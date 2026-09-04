@@ -64,7 +64,13 @@ class Judge:
     client: ChatClient
     model: str
     temperature: float = 0.0
-    max_tokens: int = 3000
+    # Reasoning models spend this budget thinking before emitting any content, and
+    # the spend varies enormously by model: deepseek-v4-pro finishes a verdict in a
+    # few hundred tokens, kimi-k3 routinely burns 13k characters of reasoning and
+    # returns finish_reason="length" with empty content. A budget tuned to one model
+    # silently produces zero usable verdicts from another, so it is set for the
+    # hungriest judge rather than the cheapest.
+    max_tokens: int = 12000
 
     def _one_order(
         self, ticket: Ticket, first: Candidate, second: Candidate
@@ -177,6 +183,7 @@ def build_judge() -> Judge:
         ),
         model=s.judge_model,
         temperature=s.judge_temperature,
+        max_tokens=s.judge_max_tokens,
     )
 
 

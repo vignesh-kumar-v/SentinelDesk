@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     judge_model: str = "deepseek-v4-pro:cloud"
     judge_temperature: float = 0.0
     judge_max_retries: int = 4
+    judge_max_tokens: int = 12000
     judge_concurrency: int = 4
 
     # --- candidate generation (the model whose outputs become preference pairs)
