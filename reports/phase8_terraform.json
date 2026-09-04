@@ -1,0 +1,39 @@
+{
+  "verified": "terraform apply and destroy both completed against a real AWS account",
+  "applied_with": {
+    "desired_count": 0,
+    "why": "stands the full stack up without paying for compute; the ALB is the only meaningful standing charge and it was destroyed immediately after"
+  },
+  "resources_created": 15,
+  "resources": [
+    "aws_cloudwatch_log_group.vllm",
+    "aws_ecr_lifecycle_policy.vllm",
+    "aws_ecr_repository.vllm",
+    "aws_ecs_cluster.this",
+    "aws_ecs_cluster_capacity_providers.this",
+    "aws_ecs_service.vllm",
+    "aws_ecs_task_definition.vllm",
+    "aws_iam_role.execution",
+    "aws_iam_role.task",
+    "aws_iam_role_policy_attachment.execution",
+    "aws_lb.this",
+    "aws_lb_listener.http",
+    "aws_lb_target_group.vllm",
+    "aws_security_group.alb",
+    "aws_security_group.task"
+  ],
+  "endpoint": "http://sentineldesk-alb-1661512377.us-east-1.elb.amazonaws.com/v1",
+  "ecr_repository_url": "032614959255.dkr.ecr.us-east-1.amazonaws.com/sentineldesk-vllm-cpu",
+  "alb_state": "active",
+  "ecs_service_status": "ACTIVE",
+  "region": "us-east-1",
+  "destroy": {
+    "result": "15 destroyed, 0 remaining in state",
+    "independently_confirmed": {
+      "alb": "LoadBalancerNotFound",
+      "ecs_cluster": "INACTIVE",
+      "ecr": "RepositoryNotFoundException"
+    },
+    "note": "checked through the AWS API rather than trusting terraform's own exit code"
+  }
+}
