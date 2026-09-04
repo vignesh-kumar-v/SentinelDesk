@@ -1,0 +1,24 @@
+# Dependency pins on top of vLLM's own CPU image.
+#
+# vLLM 0.11's requirements leave two versions open that its runtime cannot actually
+# tolerate. Neither failure appears at install time; both kill the server at import:
+#
+#   torchaudio   requirements/cpu.txt pins torch==2.8.0 but leaves torchaudio
+#                unpinned, so the resolver takes the newest release - built against
+#                a different torch. transformers imports torchaudio, and the process
+#                dies on "undefined symbol: torch_library_impl".
+#   transformers required as ">= 4.55.2" with no upper bound. transformers 5 removed
+#                all_special_tokens_extended, which vLLM's tokenizer cache calls, so
+#                a fresh image resolves to a transformers vLLM cannot use.
+#
+# Pinned here rather than patched into the build so the expensive kernel compile is
+# not invalidated every time a pin is adjusted.
+ARG BASE=sentineldesk/vllm-cpu:0.11.0
+FROM ${BASE}
+
+RUN /opt/venv/bin/pip install --no-cache-dir \
+      "torchaudio==2.8.0" \
+      "transformers>=4.55.2,<5" \
+ && /opt/venv/bin/python -c "import torch, torchaudio, transformers; \
+      print('torch', torch.__version__, '| torchaudio', torchaudio.__version__, \
+            '| transformers', transformers.__version__)"
