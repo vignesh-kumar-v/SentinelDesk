@@ -66,16 +66,22 @@ def keyword_triage(subject: str, body: str) -> tuple[str, str, float]:
     scores = {
         cat: sum(1 for kw in kws if kw in text) for cat, kws in _KEYWORDS
     }
+    # Urgency is independent of category and must be decided before any early
+    # return: a ticket that matches no category keyword can still be on fire, and
+    # routing it at default urgency because the classifier shrugged is exactly the
+    # ticket a support queue cannot afford to bury.
+    urgency = "high" if any(u in text for u in _URGENT) else "medium"
+
     best = max(scores, key=lambda c: scores[c])
     hits = scores[best]
     if hits == 0:
-        return "technical", "medium", 0.2
+        return "technical", urgency, 0.2
+
     runner_up = sorted(scores.values(), reverse=True)[1]
     # Confidence from the margin over the next-best category, not the raw hit count:
     # a ticket matching four billing words and four shipping words is ambiguous no
     # matter how many words it matched.
     confidence = min(0.35 + 0.15 * (hits - runner_up), 0.75)
-    urgency = "high" if any(u in text for u in _URGENT) else "medium"
     return best, urgency, max(confidence, 0.25)
 
 
