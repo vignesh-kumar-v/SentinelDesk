@@ -132,6 +132,18 @@ def run_sweep(
                 "eval_margin": round(e.eval_margin, 4),
                 "drift_chosen": round(e.drift, 4),
                 "over_drift_limit": e.drift > drift_limit,
+                # Overfitting shows up as a large train-eval margin gap long before
+                # it shows up in the drift guard. A run that separates the training
+                # pairs far more confidently than the held-out ones has memorised
+                # them, and its eval accuracy can still look competitive by luck on a
+                # 34-pair split.
+                "train_margin_minus_eval_margin": round(
+                    e.summary["last_step"].get("reward/margin", 0.0) - e.eval_margin, 4
+                ),
+                "eval_loss_rose": bool(
+                    e.summary.get("first_eval", {}).get("loss") is not None
+                    and e.eval_loss > e.summary["first_eval"]["loss"]
+                ),
             }
             for e in entries
         ],

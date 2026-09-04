@@ -133,15 +133,26 @@ def build_report(reports_dir: Path, out: Path) -> Path:
             "the training pairs only — never the held-out tickets the Phase 5 arena scores.** "
             "Choosing a checkpoint by its arena win-rate and then reporting that win-rate would "
             "make the headline number a measure of how many configurations were tried.\n")
-        add("| config | steps | train loss | eval loss | eval acc | eval margin | drift |")
-        add("|---|---|---|---|---|---|---|")
+        add("| config | steps | train loss | eval loss | eval acc | eval margin | "
+            "train−eval margin | drift |")
+        add("|---|---|---|---|---|---|---|---|")
         for r in p2s["runs"]:
             mark = " **(selected)**" if r["name"] == p2s.get("selected") else ""
-            flag = " ⚠over-drift" if r.get("over_drift_limit") else ""
+            flags = ""
+            if r.get("over_drift_limit"):
+                flags += " ⚠over-drift"
+            if r.get("eval_loss_rose"):
+                flags += " ⚠eval loss rose"
             add(f"| `{r['name']}`{mark} | {r['steps']} | "
                 f"{r['train_loss_first']:.4f} → {r['train_loss_last']:.4f} | "
-                f"{r['eval_loss']:.4f} | {r['eval_accuracy']:.3f} | "
-                f"{r['eval_margin']:+.4f} | {r['drift_chosen']:+.3f}{flag} |")
+                f"{r['eval_loss']:.4f}{' ⚠' if r.get('eval_loss_rose') else ''} | "
+                f"{r['eval_accuracy']:.3f} | {r['eval_margin']:+.4f} | "
+                f"{r.get('train_margin_minus_eval_margin', 0):+.3f} | "
+                f"{r['drift_chosen']:+.3f}{flags} |")
+        add("\n_train−eval margin is the overfitting indicator: a run that separates the "
+            "training pairs far more confidently than the held-out ones has memorised them, "
+            "and on a ~34-pair validation split its eval accuracy can still look competitive "
+            "by luck._")
         add(f"\n_{p2s.get('selection_rule', '')}_\n")
         if p2s.get("eval_pairs"):
             add(f"Validation split: {p2s['eval_pairs']} pairs, so the standard error on eval "
