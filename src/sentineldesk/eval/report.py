@@ -161,6 +161,27 @@ def build_report(reports_dir: Path, out: Path) -> Path:
             add("")
             for r in notes:
                 add(f"- _{r['backend']} ({r['mode']}): {r['notes']}_")
+
+        seq = next((r for r in p4["results"]
+                    if r["backend"].startswith("vllm") and r["mode"] == "sequential"), None)
+        con = next((r for r in p4["results"]
+                    if r["backend"].startswith("vllm") and r["mode"].startswith("concurrent")), None)
+        if seq and con and seq["throughput_tok_s"]:
+            gain = con["throughput_tok_s"] / seq["throughput_tok_s"]
+            lat = con["latency_p50_s"] / seq["latency_p50_s"] if seq["latency_p50_s"] else 0
+            add("")
+            add(f"**Continuous batching is worth {gain:.1f}x throughput** "
+                f"({seq['throughput_tok_s']:.1f} -> {con['throughput_tok_s']:.1f} tokens/s) for "
+                f"{lat:.2f}x the median per-request latency. That trade is the reason vLLM "
+                "exists, and it is invisible in a sequential benchmark — which is why both "
+                "regimes are measured rather than just the flattering one.")
+        add("")
+        add("**These backends are not on equal hardware, and the table should not be read "
+            "as if they were.** vLLM has no Metal backend and ships no macOS wheel, so it runs "
+            "its CPU build inside a linux/arm64 container; MLX runs on the Metal GPU and "
+            "transformers on MPS. A GPU path beating a CPU path is the expected outcome, not a "
+            "verdict on vLLM. What the vLLM rows do establish is the batching behaviour above, "
+            "which is a property of the engine rather than of the silicon.")
     else:
         add("_not run_\n")
 
