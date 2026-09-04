@@ -349,3 +349,36 @@ Drift stays modest in absolute terms (`kl/chosen` around −2.7 against a limit 
 so this is not the runaway-divergence case. It is the quieter version: the policy is
 still close to the reference, but it is moving in a direction that lowers the
 probability of good and bad responses alike.
+
+## F8 — The A/A null test, and the noise floor it exposes
+
+Before trusting any win-rate, the harness was run with the *same model in both arms* —
+two samples from identical weights at temperature 0.7, differing only by seed. The
+true win-rate is 50% by construction, so anything the harness reports beyond noise is
+the apparatus leaking a signal.
+
+| metric | value |
+|---|---|
+| wins / losses / ties | 15 / 8 / 7 |
+| win-rate, tie-adjusted | 0.617 |
+| 95% CI (Wilson) | [0.439, 0.768] |
+| binomial p vs 50% | 0.21 |
+| order-inconsistency | 23.3% |
+
+**It passes**: 50% sits inside the interval and the deviation is not significant. There
+is no detectable position bias surviving the both-orders swap, and no arm-to-slot
+correlation.
+
+**But the point estimate is 0.617, from identical weights.** That is the number to
+keep in mind when reading the real arena. On 30 tickets, sampling noise alone can
+produce what looks like a 12-point advantage. A DPO win-rate in that range, on a
+sample that size, would be indistinguishable from nothing happening. The real arena
+runs on 149 tickets, which narrows the interval considerably, but the shape of the
+lesson survives: the confidence interval is not decoration here, it is the finding.
+
+A secondary observation worth recording: order-inconsistency is **higher** in the A/A
+test (23.3%) than in Phase 1 labelling (15.9%). That is the right direction. Two
+samples from one model are genuinely near-equivalent, so the judge has less to grip
+and flips more often when the order changes. A judge whose inconsistency stayed flat
+between "these differ" and "these are identical" would be one whose verdicts were not
+tracking response quality at all.
