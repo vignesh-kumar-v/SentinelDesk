@@ -100,3 +100,54 @@ def test_gradient_pushes_chosen_up_and_rejected_down():
 def test_sequence_kl_sign():
     assert sequence_kl(torch.tensor([-5.0]), torch.tensor([-6.0])).item() == pytest.approx(1.0)
     assert sequence_kl(torch.tensor([-6.0]), torch.tensor([-6.0])).item() == pytest.approx(0.0)
+
+
+def test_chunking_does_not_change_the_result():
+    """The memory fix must be numerically invisible, or it is not a fix."""
+    torch.manual_seed(3)
+    logits = torch.randn(3, 40, 97)
+    labels = torch.full((3, 40), IGNORE_INDEX)
+    labels[:, 12:] = torch.randint(0, 97, (3, 28))
+
+    whole = sequence_logprobs(logits, labels, chunk_size=10_000)
+    chunked = sequence_logprobs(logits, labels, chunk_size=7)
+    assert torch.allclose(whole, chunked, atol=1e-4)
+
+
+def test_logprobs_match_an_explicit_log_softmax():
+    """Pins the identity the memory-efficient path relies on:
+    log p(y) == logit[y] - logsumexp(logits)."""
+    torch.manual_seed(4)
+    logits = torch.randn(2, 9, 23)
+    labels = torch.full((2, 9), IGNORE_INDEX)
+    labels[:, 4:] = torch.randint(0, 23, (2, 5))
+
+    got = sequence_logprobs(logits, labels)
+
+    reference = torch.log_softmax(logits[:, :-1].float(), dim=-1)
+    mask = labels[:, 1:] != IGNORE_INDEX
+    picked = torch.gather(
+        reference, 2, labels[:, 1:].masked_fill(~mask, 0).unsqueeze(2)
+    ).squeeze(2)
+    expect = (picked * mask).sum(dim=-1)
+    assert torch.allclose(got, expect, atol=1e-4)
+
+
+def test_logprobs_never_allocate_a_full_vocab_sized_softmax():
+    """Regression guard for the OOM: a realistic vocab must not blow up.
+
+    Qwen2.5's vocabulary is 151,936. A (4, 600, 151936) log_softmax in float32 is
+    ~1.4 GB on top of the logits themselves, which is what exhausted 24 GB of unified
+    memory at batch size 2. This runs the same shape at a size that would be obvious
+    if the full-softmax path came back.
+    """
+    b, t, v = 2, 600, 151_936
+    logits = torch.zeros(b, t, v)  # zeros so the allocation is the only cost
+    labels = torch.full((b, t), IGNORE_INDEX)
+    labels[:, 300:] = 1
+    out = sequence_logprobs(logits, labels, chunk_size=64)
+    # uniform logits -> every token has probability 1/v.
+    # labels[:, 300:] marks 300 positions; the next-token shift keeps all 300 of them
+    # as targets (shifted indices 299..598), so the sum is over 300 tokens.
+    assert out.shape == (b,)
+    assert out[0].item() == pytest.approx(300 * math.log(1 / v), rel=1e-4)

@@ -29,6 +29,7 @@ def sequence_logprobs(
     labels: torch.Tensor,
     *,
     average: bool = False,
+    chunk_size: int = 256,
 ) -> torch.Tensor:
     """Sum log p(token) over the response tokens of each sequence.
 
@@ -37,6 +38,15 @@ def sequence_logprobs(
 
     Returns (B,). The usual next-token shift is applied here, so callers pass the
     unshifted logits and labels straight from the model and the batch.
+
+    Only the log-probability of the *realised* token is ever needed, so this never
+    materialises a full log-softmax. That distinction is not a micro-optimisation on
+    a modern tokenizer: Qwen2.5's vocabulary is 151,936, so a batch of 4 sequences of
+    1,000 tokens costs about 2.4 GB in float32 for the logits and another 2.4 GB for
+    a log_softmax of the same shape. Using
+    ``log p(y) = logit[y] - logsumexp(logits)`` removes the second copy, and chunking
+    the time axis bounds what the reduction itself needs. The naive version OOMs on
+    24 GB of unified memory at batch size 2.
     """
     if logits.shape[:-1] != labels.shape:
         raise ValueError(f"logits {tuple(logits.shape)} and labels {tuple(labels.shape)} disagree")
@@ -49,9 +59,14 @@ def sequence_logprobs(
     # zero their contribution afterwards.
     safe_labels = labels.masked_fill(~mask, 0)
 
-    logprobs = torch.log_softmax(logits.float(), dim=-1)
-    token_logprobs = torch.gather(logprobs, dim=2, index=safe_labels.unsqueeze(2)).squeeze(2)
-    token_logprobs = token_logprobs * mask
+    pieces = []
+    for start in range(0, logits.shape[1], chunk_size):
+        stop = start + chunk_size
+        chunk = logits[:, start:stop, :].float()
+        target = safe_labels[:, start:stop]
+        selected = torch.gather(chunk, dim=2, index=target.unsqueeze(2)).squeeze(2)
+        pieces.append(selected - torch.logsumexp(chunk, dim=-1))
+    token_logprobs = torch.cat(pieces, dim=1) * mask
 
     summed = token_logprobs.sum(dim=-1)
     if average:

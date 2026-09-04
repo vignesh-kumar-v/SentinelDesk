@@ -103,3 +103,40 @@
 00:44:46 WARNING  unparseable/incomplete JSON on attempt 3: ''                  
          WARNING  judge failed for T0227: no valid JSON after 3 attempts; last  
                   reply:                                                        
+00:45:24 INFO     judged 175/445                                                
+00:45:29 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:46:50 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:47:01 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:47:09 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:47:25 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:48:30 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:48:34 INFO     judged 200/445                                                
+00:49:15 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:49:48 WARNING  unparseable/incomplete JSON on attempt 2: '{"a":              
+                  {"correctness": 0, "completeness": 1, "conciseness'           
+00:50:59 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:51:09 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:51:37 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:51:56 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:52:18 WARNING  unparseable/incomplete JSON on attempt 3: '{"a":              
+                  {"correctness": 0, "completeness": 1, "conciseness": 0,       
+                  "tone": 1},\n  "b": {"correctness": 0'                        
+         WARNING  judge failed for T0284: no valid JSON after 3 attempts; last  
+                  reply: {"a": {"correctness": 0, "completeness": 1,            
+                  "conciseness": 0, "tone": 1},                                 
+                                                                                
+         WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:52:41 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:53:02 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:53:12 INFO     judged 225/445                                                
+00:54:04 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:54:15 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:54:39 WARNING  unparseable/incomplete JSON on attempt 1: '{"a":              
+                  {"correctness": 0, "completeness": 0, "conciseness": 0,       
+                  "tone": 1}, "b": {"correctness": 0, "completeness": 0,        
+                  "conciseness": 2, "tone": 2}, "winner": "B"'                  
+00:54:42 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:55:15 WARNING  unparseable/incomplete JSON on attempt 2: ''                  
+00:55:28 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:55:30 WARNING  unparseable/incomplete JSON on attempt 1: ''                  
+00:56:47 INFO     judged 250/445                                                
