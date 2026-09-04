@@ -9,7 +9,8 @@ VLLM_IMAGE := sentineldesk/vllm-cpu:0.11.0-pinned
         smoke tickets pairs spotcheck spotcheck-human \
         sweep train curves graph-check \
         vllm-build vllm-build-native vllm-serve vllm-stop bench \
-        arena arena-aa report all-core guardrails langfuse-up langfuse-down trace
+        arena arena-aa report all-core guardrails langfuse-up langfuse-down trace \
+        tf-init tf-plan tf-apply tf-destroy
 
 help: ## show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -107,6 +108,20 @@ report: ## regenerate reports/RESULTS.md from the phase reports
 	$(SD) report
 
 all-core: smoke tickets pairs spotcheck sweep curves graph-check bench arena-aa arena report ## the whole core scope
+
+# ----------------------------------------------------------------- phase 8
+tf-init: ## terraform init (no backend, local state)
+	cd terraform && terraform init -backend=false
+
+tf-plan: ## terraform validate + plan (free; read-only AWS calls)
+	cd terraform && terraform fmt -check -recursive && terraform validate && terraform plan
+
+tf-apply: ## BILLABLE: stand up the ECS/ALB serving stack
+	@echo "This creates billable AWS resources (ALB ~\$$16/mo standing). Ctrl-C to abort."
+	cd terraform && terraform apply
+
+tf-destroy: ## tear the stack down
+	cd terraform && terraform destroy
 
 clean: ## remove generated data and artifacts (keeps the policy KB)
 	rm -rf data/processed data/prefs artifacts reports/*.json reports/*.png

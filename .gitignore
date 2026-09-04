@@ -39,3 +39,8 @@ reports/*.log
 
 # os
 .DS_Store
+
+# terraform local state and provider binaries
+terraform/.terraform/
+terraform/*.tfstate*
+terraform/.terraform.lock.hcl
