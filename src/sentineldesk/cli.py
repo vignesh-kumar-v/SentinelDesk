@@ -633,6 +633,69 @@ def arena(
     console.print(scores)
 
 
+@app.command("arena-aa")
+def arena_aa(
+    n: int = typer.Option(30, help="held-out tickets to use"),
+    model: str = typer.Option("", help="defaults to SD_BASE_MODEL"),
+    concurrency: int = typer.Option(4),
+    seed_offset: int = typer.Option(1, help="shifts the second arm's sampling seed"),
+) -> None:
+    """Null test: run the arena with the SAME model in both arms.
+
+    A benchmark that reports a win-rate has to be shown incapable of manufacturing
+    one. Two arms from identical weights differ only by sampling noise, so anything
+    far from 50% here is the harness leaking a signal — a position bias the
+    both-orders swap failed to cancel, an arm-to-slot correlation, or a judge that
+    can tell the arms apart some other way. Run this before trusting the real number.
+    """
+    from .data.schema import Ticket, dump_json, read_jsonl
+    from .eval.arena import run_arena
+    from .prefs.candidates import STRATEGIES, build_messages
+    from .prefs.judge import build_judge
+    from .serving.local import HFGenerator
+
+    s = get_settings()
+    path = model or s.base_model
+    tickets = [t for t in read_jsonl(Path("data/processed/tickets.jsonl"), Ticket)
+               if t.split == "heldout"][:n]
+    prompts = [build_messages(t, STRATEGIES["grounded"]) for t in tickets]
+
+    gen = HFGenerator(path, batch_size=8)
+    # Nonzero temperature on both arms: at temperature 0 the two arms would be
+    # byte-identical and every comparison a trivial tie, which tests nothing.
+    torch_seed = s.seed
+    import torch
+
+    torch.manual_seed(torch_seed)
+    a = gen.generate(prompts, temperature=0.7, top_p=0.9, max_tokens=220)
+    torch.manual_seed(torch_seed + seed_offset)
+    b = gen.generate(prompts, temperature=0.7, top_p=0.9, max_tokens=220)
+    del gen
+
+    result = run_arena(
+        tickets, {t.id: x.strip() for t, x in zip(tickets, a, strict=True)},
+        {t.id: x.strip() for t, x in zip(tickets, b, strict=True)},
+        build_judge(), seed=s.seed, concurrency=concurrency,
+    )
+    payload = result.summary | {"model": path, "note": "A/A null test — same weights both arms"}
+    dump_json(Paths.reports / "phase5_arena_aa.json", payload)
+
+    table = Table(title=f"A/A null test — {path} against itself")
+    for k in ("n", "wins_tuned", "losses_tuned", "ties", "win_rate_adjusted",
+              "win_rate_adjusted_ci95", "binomial_p_vs_50pct", "significant_at_05",
+              "order_inconsistency_rate", "corr_win_vs_length_delta"):
+        v = payload.get(k)
+        table.add_row(k, json.dumps(v) if isinstance(v, (dict, list)) else str(v))
+    console.print(table)
+    lo, hi = payload["win_rate_adjusted_ci95"]
+    if lo <= 0.5 <= hi:
+        console.print("[green]PASS[/] 50% sits inside the interval: the harness is not "
+                      "manufacturing a winner.")
+    else:
+        console.print("[red]FAIL[/] the harness prefers one arm even with identical "
+                      "weights — do not trust the real arena until this is explained.")
+
+
 @app.command("report")
 def report(out: Path = typer.Option(Path("reports/RESULTS.md"))) -> None:
     """Regenerate the results write-up from whichever phase reports exist."""

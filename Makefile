@@ -9,7 +9,7 @@ VLLM_IMAGE := sentineldesk/vllm-cpu:0.11.0-pinned
         smoke tickets pairs spotcheck spotcheck-human \
         sweep train curves graph-check \
         vllm-build vllm-build-native vllm-serve vllm-stop bench \
-        arena report all-core
+        arena arena-aa report all-core
 
 help: ## show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -83,13 +83,16 @@ bench: ## PHASE 4: tokens/s and latency, vLLM vs transformers-MPS vs MLX
 	$(SD) bench
 
 # ----------------------------------------------------------------- phase 5
+arena-aa: ## PHASE 5 sanity: A/A null test — same model in both arms, expect 50%
+	$(SD) arena-aa --n 30
+
 arena: ## PHASE 5: blind judge-scored win-rate on the held-out set
 	$(SD) arena
 
 report: ## regenerate reports/RESULTS.md from the phase reports
 	$(SD) report
 
-all-core: smoke tickets pairs spotcheck sweep curves graph-check bench arena report ## the whole core scope
+all-core: smoke tickets pairs spotcheck sweep curves graph-check bench arena-aa arena report ## the whole core scope
 
 clean: ## remove generated data and artifacts (keeps the policy KB)
 	rm -rf data/processed data/prefs artifacts reports/*.json reports/*.png
