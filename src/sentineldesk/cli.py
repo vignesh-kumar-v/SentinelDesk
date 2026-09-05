@@ -563,6 +563,9 @@ def arena(
     concurrency: int = typer.Option(6),
     temperature: float = typer.Option(0.0, help="0 makes both arms deterministic"),
     max_tokens: int = typer.Option(220),
+    reuse_responses: Path = typer.Option(
+        None, help="re-judge saved responses instead of regenerating them"
+    ),
 ) -> None:
     """PHASE 5: blind, both-orders judge-scored win-rate on held-out tickets.
 
@@ -581,18 +584,49 @@ def arena(
         tickets = tickets[:n]
     prompts = [build_messages(t, STRATEGIES["grounded"]) for t in tickets]
 
-    arms = {}
-    for arm, path in ((ARM_TUNED, str(tuned)), (ARM_BASE, base or s.base_model)):
-        console.print(f"generating [bold]{arm}[/] responses with {path}")
-        gen = HFGenerator(path, batch_size=batch_size)
-        texts = gen.generate(prompts, temperature=temperature, top_p=1.0, max_tokens=max_tokens)
-        arms[arm] = {t.id: text.strip() for t, text in zip(tickets, texts, strict=True)}
-        del gen
+    arms: dict[str, dict[str, str]] = {}
+    if reuse_responses and reuse_responses.exists():
+        # Generation is deterministic at temperature 0, so re-judging saved responses
+        # gives the same comparison without paying for 20 minutes of decoding again.
+        saved = json.loads(reuse_responses.read_text(encoding="utf-8"))
+        arms = {ARM_TUNED: {k: v[ARM_TUNED] for k, v in saved.items()},
+                ARM_BASE: {k: v[ARM_BASE] for k, v in saved.items()}}
+        tickets = [t for t in tickets if t.id in saved]
+        console.print(f"reusing {len(saved)} saved response pairs from {reuse_responses}")
+    else:
+        for arm, path in ((ARM_TUNED, str(tuned)), (ARM_BASE, base or s.base_model)):
+            console.print(f"generating [bold]{arm}[/] responses with {path}")
+            gen = HFGenerator(path, batch_size=batch_size)
+            texts = gen.generate(prompts, temperature=temperature, top_p=1.0,
+                                 max_tokens=max_tokens)
+            arms[arm] = {t.id: text.strip() for t, text in zip(tickets, texts, strict=True)}
+            del gen
 
     result = run_arena(
         tickets, arms[ARM_TUNED], arms[ARM_BASE], build_judge(),
         seed=s.seed, concurrency=concurrency,
     )
+
+    # Refuse to overwrite a larger completed run with a smaller partial one. The arena
+    # writes to fixed paths, so a re-run that loses most of its judge calls to a rate
+    # limit will silently replace a good result with a worse one — which is exactly
+    # what happened once here. Judge failures are skipped rather than raised, so the
+    # command otherwise exits 0 and looks successful.
+    prior = Paths.reports / "phase5_arena.json"
+    if prior.exists():
+        try:
+            prev_n = json.loads(prior.read_text(encoding="utf-8")).get("n", 0)
+        except Exception:  # noqa: BLE001
+            prev_n = 0
+        if len(result.outcomes) < prev_n:
+            backup = Paths.reports / "phase5_arena.partial.json"
+            dump_json(backup, result.summary | {"refused_to_overwrite": prev_n})
+            console.print(
+                f"[red]refusing to overwrite[/] a {prev_n}-ticket result with "
+                f"{len(result.outcomes)} tickets — {prev_n - len(result.outcomes)} judge "
+                f"calls failed (rate limit?). Partial result written to {backup}."
+            )
+            raise typer.Exit(1)
     payload = result.summary | judge_metadata() | {
         "tuned_arm": str(tuned), "base_arm": base or s.base_model,
         "temperature": temperature, "max_tokens": max_tokens,
@@ -602,7 +636,12 @@ def arena(
         Paths.reports / "phase5_arena_outcomes.json",
         [
             {"ticket_id": o.ticket_id, "category": o.category, "winner": o.winner,
-             "consistent": o.consistent, "margin": o.margin, "lengths": o.lengths}
+             "consistent": o.consistent, "margin": o.margin, "lengths": o.lengths,
+             # Per-dimension scores, not just the aggregate. Without these the only
+             # available significance test is on the win/loss/tie reduction, which
+             # throws away most of the information: a paired test across 149 tickets
+             # on the correctness score is far more powerful than a binomial on who won.
+             "scores": o.scores}
             for o in result.outcomes
         ],
     )

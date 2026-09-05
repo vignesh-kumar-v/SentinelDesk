@@ -1,0 +1,1641 @@
+[
+  {
+    "ticket_id": "T0000",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 265,
+      "base_prompted": 373
+    }
+  },
+  {
+    "ticket_id": "T0005",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 748,
+      "base_prompted": 235
+    }
+  },
+  {
+    "ticket_id": "T0006",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 3.5,
+    "lengths": {
+      "dpo_tuned": 740,
+      "base_prompted": 440
+    }
+  },
+  {
+    "ticket_id": "T0008",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 609,
+      "base_prompted": 534
+    }
+  },
+  {
+    "ticket_id": "T0009",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 239,
+      "base_prompted": 733
+    }
+  },
+  {
+    "ticket_id": "T0022",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 564,
+      "base_prompted": 773
+    }
+  },
+  {
+    "ticket_id": "T0023",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 292,
+      "base_prompted": 767
+    }
+  },
+  {
+    "ticket_id": "T0024",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 961,
+      "base_prompted": 180
+    }
+  },
+  {
+    "ticket_id": "T0030",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 587,
+      "base_prompted": 591
+    }
+  },
+  {
+    "ticket_id": "T0033",
+    "category": "account_access",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 784,
+      "base_prompted": 625
+    }
+  },
+  {
+    "ticket_id": "T0035",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 223,
+      "base_prompted": 223
+    }
+  },
+  {
+    "ticket_id": "T0038",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 3.0,
+    "lengths": {
+      "dpo_tuned": 331,
+      "base_prompted": 833
+    }
+  },
+  {
+    "ticket_id": "T0044",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 88,
+      "base_prompted": 465
+    }
+  },
+  {
+    "ticket_id": "T0046",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 142,
+      "base_prompted": 146
+    }
+  },
+  {
+    "ticket_id": "T0047",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 7.0,
+    "lengths": {
+      "dpo_tuned": 166,
+      "base_prompted": 265
+    }
+  },
+  {
+    "ticket_id": "T0051",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 308,
+      "base_prompted": 991
+    }
+  },
+  {
+    "ticket_id": "T0059",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 781,
+      "base_prompted": 1081
+    }
+  },
+  {
+    "ticket_id": "T0061",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 3.5,
+    "lengths": {
+      "dpo_tuned": 343,
+      "base_prompted": 461
+    }
+  },
+  {
+    "ticket_id": "T0062",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 598,
+      "base_prompted": 447
+    }
+  },
+  {
+    "ticket_id": "T0069",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 160,
+      "base_prompted": 612
+    }
+  },
+  {
+    "ticket_id": "T0076",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 191,
+      "base_prompted": 268
+    }
+  },
+  {
+    "ticket_id": "T0077",
+    "category": "account_access",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 473,
+      "base_prompted": 297
+    }
+  },
+  {
+    "ticket_id": "T0080",
+    "category": "shipping",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 463,
+      "base_prompted": 222
+    }
+  },
+  {
+    "ticket_id": "T0082",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 526,
+      "base_prompted": 639
+    }
+  },
+  {
+    "ticket_id": "T0083",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 867,
+      "base_prompted": 554
+    }
+  },
+  {
+    "ticket_id": "T0086",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 656,
+      "base_prompted": 609
+    }
+  },
+  {
+    "ticket_id": "T0088",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 292,
+      "base_prompted": 512
+    }
+  },
+  {
+    "ticket_id": "T0089",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.5,
+    "lengths": {
+      "dpo_tuned": 100,
+      "base_prompted": 770
+    }
+  },
+  {
+    "ticket_id": "T0091",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 415,
+      "base_prompted": 452
+    }
+  },
+  {
+    "ticket_id": "T0099",
+    "category": "account_access",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 159,
+      "base_prompted": 279
+    }
+  },
+  {
+    "ticket_id": "T0101",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 3.0,
+    "lengths": {
+      "dpo_tuned": 197,
+      "base_prompted": 984
+    }
+  },
+  {
+    "ticket_id": "T0105",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 346,
+      "base_prompted": 712
+    }
+  },
+  {
+    "ticket_id": "T0106",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 5.0,
+    "lengths": {
+      "dpo_tuned": 297,
+      "base_prompted": 895
+    }
+  },
+  {
+    "ticket_id": "T0108",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 189,
+      "base_prompted": 520
+    }
+  },
+  {
+    "ticket_id": "T0110",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 301,
+      "base_prompted": 327
+    }
+  },
+  {
+    "ticket_id": "T0112",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 87,
+      "base_prompted": 345
+    }
+  },
+  {
+    "ticket_id": "T0118",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 53,
+      "base_prompted": 53
+    }
+  },
+  {
+    "ticket_id": "T0121",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 309,
+      "base_prompted": 309
+    }
+  },
+  {
+    "ticket_id": "T0122",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 327,
+      "base_prompted": 373
+    }
+  },
+  {
+    "ticket_id": "T0125",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 225,
+      "base_prompted": 542
+    }
+  },
+  {
+    "ticket_id": "T0126",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 549,
+      "base_prompted": 514
+    }
+  },
+  {
+    "ticket_id": "T0127",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 658,
+      "base_prompted": 1348
+    }
+  },
+  {
+    "ticket_id": "T0128",
+    "category": "product_info",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 122,
+      "base_prompted": 530
+    }
+  },
+  {
+    "ticket_id": "T0129",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 144,
+      "base_prompted": 166
+    }
+  },
+  {
+    "ticket_id": "T0136",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 4.0,
+    "lengths": {
+      "dpo_tuned": 879,
+      "base_prompted": 980
+    }
+  },
+  {
+    "ticket_id": "T0137",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 813,
+      "base_prompted": 728
+    }
+  },
+  {
+    "ticket_id": "T0146",
+    "category": "shipping",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 98,
+      "base_prompted": 841
+    }
+  },
+  {
+    "ticket_id": "T0147",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 152,
+      "base_prompted": 368
+    }
+  },
+  {
+    "ticket_id": "T0150",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 3.0,
+    "lengths": {
+      "dpo_tuned": 613,
+      "base_prompted": 995
+    }
+  },
+  {
+    "ticket_id": "T0155",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 3.0,
+    "lengths": {
+      "dpo_tuned": 175,
+      "base_prompted": 1149
+    }
+  },
+  {
+    "ticket_id": "T0159",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 563,
+      "base_prompted": 890
+    }
+  },
+  {
+    "ticket_id": "T0171",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 400,
+      "base_prompted": 589
+    }
+  },
+  {
+    "ticket_id": "T0179",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 62,
+      "base_prompted": 277
+    }
+  },
+  {
+    "ticket_id": "T0183",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 2.5,
+    "lengths": {
+      "dpo_tuned": 352,
+      "base_prompted": 411
+    }
+  },
+  {
+    "ticket_id": "T0185",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 86,
+      "base_prompted": 321
+    }
+  },
+  {
+    "ticket_id": "T0186",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.5,
+    "lengths": {
+      "dpo_tuned": 72,
+      "base_prompted": 439
+    }
+  },
+  {
+    "ticket_id": "T0187",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 202,
+      "base_prompted": 360
+    }
+  },
+  {
+    "ticket_id": "T0205",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 352,
+      "base_prompted": 1070
+    }
+  },
+  {
+    "ticket_id": "T0206",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 603,
+      "base_prompted": 607
+    }
+  },
+  {
+    "ticket_id": "T0216",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 331,
+      "base_prompted": 316
+    }
+  },
+  {
+    "ticket_id": "T0226",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 683,
+      "base_prompted": 1028
+    }
+  },
+  {
+    "ticket_id": "T0234",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 875,
+      "base_prompted": 981
+    }
+  },
+  {
+    "ticket_id": "T0236",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 890,
+      "base_prompted": 530
+    }
+  },
+  {
+    "ticket_id": "T0240",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 150,
+      "base_prompted": 206
+    }
+  },
+  {
+    "ticket_id": "T0246",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 838,
+      "base_prompted": 444
+    }
+  },
+  {
+    "ticket_id": "T0248",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 257,
+      "base_prompted": 439
+    }
+  },
+  {
+    "ticket_id": "T0250",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 323,
+      "base_prompted": 772
+    }
+  },
+  {
+    "ticket_id": "T0255",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 441,
+      "base_prompted": 706
+    }
+  },
+  {
+    "ticket_id": "T0263",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 84,
+      "base_prompted": 62
+    }
+  },
+  {
+    "ticket_id": "T0273",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 288,
+      "base_prompted": 896
+    }
+  },
+  {
+    "ticket_id": "T0275",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 508,
+      "base_prompted": 479
+    }
+  },
+  {
+    "ticket_id": "T0286",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 1022,
+      "base_prompted": 357
+    }
+  },
+  {
+    "ticket_id": "T0290",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 829,
+      "base_prompted": 599
+    }
+  },
+  {
+    "ticket_id": "T0292",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 3.0,
+    "lengths": {
+      "dpo_tuned": 485,
+      "base_prompted": 143
+    }
+  },
+  {
+    "ticket_id": "T0300",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 674,
+      "base_prompted": 978
+    }
+  },
+  {
+    "ticket_id": "T0301",
+    "category": "shipping",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 735,
+      "base_prompted": 990
+    }
+  },
+  {
+    "ticket_id": "T0306",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 83,
+      "base_prompted": 493
+    }
+  },
+  {
+    "ticket_id": "T0315",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 359,
+      "base_prompted": 566
+    }
+  },
+  {
+    "ticket_id": "T0318",
+    "category": "account_access",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 4.0,
+    "lengths": {
+      "dpo_tuned": 156,
+      "base_prompted": 337
+    }
+  },
+  {
+    "ticket_id": "T0319",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 356,
+      "base_prompted": 534
+    }
+  },
+  {
+    "ticket_id": "T0323",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 44,
+      "base_prompted": 331
+    }
+  },
+  {
+    "ticket_id": "T0326",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 125,
+      "base_prompted": 188
+    }
+  },
+  {
+    "ticket_id": "T0328",
+    "category": "product_info",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 255,
+      "base_prompted": 168
+    }
+  },
+  {
+    "ticket_id": "T0329",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 91,
+      "base_prompted": 630
+    }
+  },
+  {
+    "ticket_id": "T0339",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 215,
+      "base_prompted": 908
+    }
+  },
+  {
+    "ticket_id": "T0341",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 433,
+      "base_prompted": 421
+    }
+  },
+  {
+    "ticket_id": "T0344",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 115,
+      "base_prompted": 217
+    }
+  },
+  {
+    "ticket_id": "T0345",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 209,
+      "base_prompted": 1022
+    }
+  },
+  {
+    "ticket_id": "T0348",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 99,
+      "base_prompted": 198
+    }
+  },
+  {
+    "ticket_id": "T0354",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 181,
+      "base_prompted": 277
+    }
+  },
+  {
+    "ticket_id": "T0356",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 292,
+      "base_prompted": 528
+    }
+  },
+  {
+    "ticket_id": "T0361",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 324,
+      "base_prompted": 324
+    }
+  },
+  {
+    "ticket_id": "T0372",
+    "category": "product_info",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 391,
+      "base_prompted": 465
+    }
+  },
+  {
+    "ticket_id": "T0375",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 4.5,
+    "lengths": {
+      "dpo_tuned": 416,
+      "base_prompted": 938
+    }
+  },
+  {
+    "ticket_id": "T0379",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 338,
+      "base_prompted": 288
+    }
+  },
+  {
+    "ticket_id": "T0385",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 409,
+      "base_prompted": 529
+    }
+  },
+  {
+    "ticket_id": "T0387",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 446,
+      "base_prompted": 1022
+    }
+  },
+  {
+    "ticket_id": "T0390",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 344,
+      "base_prompted": 229
+    }
+  },
+  {
+    "ticket_id": "T0392",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 5.0,
+    "lengths": {
+      "dpo_tuned": 1049,
+      "base_prompted": 488
+    }
+  },
+  {
+    "ticket_id": "T0393",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 84,
+      "base_prompted": 263
+    }
+  },
+  {
+    "ticket_id": "T0396",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 107,
+      "base_prompted": 1001
+    }
+  },
+  {
+    "ticket_id": "T0397",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 87,
+      "base_prompted": 98
+    }
+  },
+  {
+    "ticket_id": "T0399",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 416,
+      "base_prompted": 416
+    }
+  },
+  {
+    "ticket_id": "T0403",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 297,
+      "base_prompted": 315
+    }
+  },
+  {
+    "ticket_id": "T0405",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 79,
+      "base_prompted": 213
+    }
+  },
+  {
+    "ticket_id": "T0407",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 417,
+      "base_prompted": 417
+    }
+  },
+  {
+    "ticket_id": "T0420",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 569,
+      "base_prompted": 881
+    }
+  },
+  {
+    "ticket_id": "T0427",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 163,
+      "base_prompted": 247
+    }
+  },
+  {
+    "ticket_id": "T0430",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 422,
+      "base_prompted": 692
+    }
+  },
+  {
+    "ticket_id": "T0433",
+    "category": "product_info",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 369,
+      "base_prompted": 62
+    }
+  },
+  {
+    "ticket_id": "T0434",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 848,
+      "base_prompted": 1095
+    }
+  },
+  {
+    "ticket_id": "T0435",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 348,
+      "base_prompted": 484
+    }
+  },
+  {
+    "ticket_id": "T0436",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 85,
+      "base_prompted": 70
+    }
+  },
+  {
+    "ticket_id": "T0437",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 78,
+      "base_prompted": 894
+    }
+  },
+  {
+    "ticket_id": "T0441",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 527,
+      "base_prompted": 867
+    }
+  },
+  {
+    "ticket_id": "T0443",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 274,
+      "base_prompted": 291
+    }
+  },
+  {
+    "ticket_id": "T0444",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 1003,
+      "base_prompted": 1018
+    }
+  },
+  {
+    "ticket_id": "T0449",
+    "category": "account_access",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 2.5,
+    "lengths": {
+      "dpo_tuned": 544,
+      "base_prompted": 1163
+    }
+  },
+  {
+    "ticket_id": "T0451",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.0,
+    "lengths": {
+      "dpo_tuned": 192,
+      "base_prompted": 310
+    }
+  },
+  {
+    "ticket_id": "T0453",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 163,
+      "base_prompted": 933
+    }
+  },
+  {
+    "ticket_id": "T0455",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 174,
+      "base_prompted": 423
+    }
+  },
+  {
+    "ticket_id": "T0478",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 223,
+      "base_prompted": 332
+    }
+  },
+  {
+    "ticket_id": "T0484",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 370,
+      "base_prompted": 370
+    }
+  },
+  {
+    "ticket_id": "T0486",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 233,
+      "base_prompted": 446
+    }
+  },
+  {
+    "ticket_id": "T0487",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 490,
+      "base_prompted": 660
+    }
+  },
+  {
+    "ticket_id": "T0490",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 332,
+      "base_prompted": 337
+    }
+  },
+  {
+    "ticket_id": "T0496",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 754,
+      "base_prompted": 1094
+    }
+  },
+  {
+    "ticket_id": "T0497",
+    "category": "shipping",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 388,
+      "base_prompted": 341
+    }
+  },
+  {
+    "ticket_id": "T0502",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 66,
+      "base_prompted": 151
+    }
+  },
+  {
+    "ticket_id": "T0505",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 388,
+      "base_prompted": 539
+    }
+  },
+  {
+    "ticket_id": "T0507",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 739,
+      "base_prompted": 895
+    }
+  },
+  {
+    "ticket_id": "T0511",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 66,
+      "base_prompted": 366
+    }
+  },
+  {
+    "ticket_id": "T0514",
+    "category": "account_access",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 4.5,
+    "lengths": {
+      "dpo_tuned": 241,
+      "base_prompted": 448
+    }
+  },
+  {
+    "ticket_id": "T0523",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 3.5,
+    "lengths": {
+      "dpo_tuned": 271,
+      "base_prompted": 863
+    }
+  },
+  {
+    "ticket_id": "T0529",
+    "category": "technical",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 4.5,
+    "lengths": {
+      "dpo_tuned": 832,
+      "base_prompted": 448
+    }
+  },
+  {
+    "ticket_id": "T0532",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 176,
+      "base_prompted": 507
+    }
+  },
+  {
+    "ticket_id": "T0536",
+    "category": "account_access",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 309,
+      "base_prompted": 256
+    }
+  },
+  {
+    "ticket_id": "T0548",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 299,
+      "base_prompted": 395
+    }
+  },
+  {
+    "ticket_id": "T0553",
+    "category": "technical",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 336,
+      "base_prompted": 360
+    }
+  },
+  {
+    "ticket_id": "T0560",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 105,
+      "base_prompted": 493
+    }
+  },
+  {
+    "ticket_id": "T0568",
+    "category": "billing",
+    "winner": "base_prompted",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 200,
+      "base_prompted": 925
+    }
+  },
+  {
+    "ticket_id": "T0571",
+    "category": "billing",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 248,
+      "base_prompted": 216
+    }
+  },
+  {
+    "ticket_id": "T0575",
+    "category": "technical",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 462,
+      "base_prompted": 754
+    }
+  },
+  {
+    "ticket_id": "T0580",
+    "category": "account_access",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 147,
+      "base_prompted": 528
+    }
+  },
+  {
+    "ticket_id": "T0583",
+    "category": "shipping",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 1.5,
+    "lengths": {
+      "dpo_tuned": 202,
+      "base_prompted": 1032
+    }
+  },
+  {
+    "ticket_id": "T0585",
+    "category": "product_info",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 797,
+      "base_prompted": 819
+    }
+  },
+  {
+    "ticket_id": "T0587",
+    "category": "product_info",
+    "winner": "tie",
+    "consistent": false,
+    "margin": 0.0,
+    "lengths": {
+      "dpo_tuned": 385,
+      "base_prompted": 447
+    }
+  },
+  {
+    "ticket_id": "T0589",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 2.0,
+    "lengths": {
+      "dpo_tuned": 212,
+      "base_prompted": 437
+    }
+  },
+  {
+    "ticket_id": "T0592",
+    "category": "billing",
+    "winner": "dpo_tuned",
+    "consistent": true,
+    "margin": 0.5,
+    "lengths": {
+      "dpo_tuned": 664,
+      "base_prompted": 737
+    }
+  }
+]

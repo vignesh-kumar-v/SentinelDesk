@@ -1,104 +1,89 @@
 {
-  "n": 149,
-  "wins_tuned": 52,
-  "losses_tuned": 32,
-  "ties": 65,
-  "win_rate_adjusted": 0.5671,
+  "n": 57,
+  "wins_tuned": 26,
+  "losses_tuned": 17,
+  "ties": 14,
+  "win_rate_adjusted": 0.5789,
   "win_rate_adjusted_ci95": [
-    0.4869,
-    0.644
+    0.4498,
+    0.6981
   ],
-  "win_rate_decisive": 0.619,
+  "win_rate_decisive": 0.6047,
   "win_rate_decisive_ci95": [
-    0.5122,
-    0.7155
+    0.4558,
+    0.7363
   ],
-  "binomial_p_vs_50pct": 0.03753,
-  "significant_at_05": true,
-  "order_inconsistency_rate": 0.4362,
+  "binomial_p_vs_50pct": 0.22205,
+  "significant_at_05": false,
+  "order_inconsistency_rate": 0.2456,
   "by_category": {
     "account_access": {
-      "n": 27,
-      "wins": 8,
-      "ties": 13,
-      "losses": 6,
-      "win_rate_adjusted": 0.537
+      "n": 9,
+      "wins": 2,
+      "ties": 2,
+      "losses": 5,
+      "win_rate_adjusted": 0.3333
     },
     "billing": {
-      "n": 34,
-      "wins": 15,
-      "ties": 12,
-      "losses": 7,
-      "win_rate_adjusted": 0.6176
+      "n": 15,
+      "wins": 8,
+      "ties": 5,
+      "losses": 2,
+      "win_rate_adjusted": 0.7
     },
     "product_info": {
-      "n": 27,
-      "wins": 11,
-      "ties": 12,
-      "losses": 4,
-      "win_rate_adjusted": 0.6296
+      "n": 11,
+      "wins": 4,
+      "ties": 4,
+      "losses": 3,
+      "win_rate_adjusted": 0.5455
     },
     "shipping": {
-      "n": 27,
-      "wins": 10,
-      "ties": 14,
-      "losses": 3,
-      "win_rate_adjusted": 0.6296
+      "n": 10,
+      "wins": 8,
+      "ties": 0,
+      "losses": 2,
+      "win_rate_adjusted": 0.8
     },
     "technical": {
-      "n": 34,
-      "wins": 8,
-      "ties": 14,
-      "losses": 12,
-      "win_rate_adjusted": 0.4412
+      "n": 12,
+      "wins": 4,
+      "ties": 3,
+      "losses": 5,
+      "win_rate_adjusted": 0.4583
     }
   },
   "mean_scores": {
     "dpo_tuned": {
-      "correctness": 0.527,
-      "completeness": 0.346,
-      "conciseness": 1.463,
-      "tone": 1.141,
-      "total": 3.477
+      "correctness": 0.667,
+      "completeness": 0.237,
+      "conciseness": 1.14,
+      "tone": 1.123,
+      "total": 3.167
     },
     "base_prompted": {
-      "correctness": 0.473,
-      "completeness": 0.315,
-      "conciseness": 1.114,
-      "tone": 1.148,
-      "total": 3.05
+      "correctness": 0.474,
+      "completeness": 0.272,
+      "conciseness": 1.088,
+      "tone": 1.07,
+      "total": 2.904
     }
   },
   "mean_chars": {
-    "dpo_tuned": 373.3,
-    "base_prompted": 546.3
+    "dpo_tuned": 552.7,
+    "base_prompted": 562.3
   },
-  "length_ratio_tuned_over_base": 0.683,
-  "corr_win_vs_length_delta": -0.2783,
+  "length_ratio_tuned_over_base": 0.983,
+  "corr_win_vs_length_delta": -0.1831,
   "shown_first_distribution": {
-    "base_prompted": 85,
-    "dpo_tuned": 64
+    "base_prompted": 34,
+    "dpo_tuned": 23
   },
   "judge_model": "deepseek-v4-pro:cloud",
   "rubric_version": "v1",
   "rubric_fingerprint": "f14d5cd4800b",
-  "tuned_arm": "artifacts/dpo/checkpoint",
+  "tuned_arm": "artifacts/dpo_v2/checkpoint",
   "base_arm": "Qwen/Qwen2.5-0.5B-Instruct",
   "temperature": 0.0,
-  "max_tokens": 220,
-  "inconsistency_diagnosis": {
-    "consistent_n": 84,
-    "inconsistent_n": 65,
-    "mean_score_gap_consistent": 1.786,
-    "mean_score_gap_inconsistent": 0.285,
-    "mean_abs_length_delta_consistent": 361,
-    "mean_abs_length_delta_inconsistent": 133
-  },
-  "degeneracy_check": {
-    "tuned_under_60_chars": 2,
-    "base_under_60_chars": 1,
-    "tuned_empty": 0,
-    "n": 149
-  },
-  "training_pair_length_ratio": 0.662
+  "max_tokens": 220
 }
