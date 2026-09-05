@@ -4,62 +4,71 @@
   "rubric_fingerprint": "f14d5cd4800b",
   "tickets": 445,
   "candidates_per_ticket": 2,
-  "judged": 409,
-  "order_inconsistency_rate": 0.1589,
+  "judged": 445,
+  "order_inconsistency_rate": 0.2112,
   "winner_distribution": {
-    "rushed": 123,
-    "tie": 65,
-    "grounded": 221
+    "rushed": 136,
+    "grounded": 215,
+    "tie": 94
   },
-  "usable_pairs": 344,
-  "pair_yield": 0.8411,
+  "usable_pairs": 290,
+  "pair_yield": 0.6517,
   "mean_scores_by_strategy": {
     "grounded": {
-      "correctness": 0.489,
-      "completeness": 0.292,
-      "conciseness": 1.127,
-      "tone": 0.961,
-      "total": 2.869
+      "correctness": 0.521,
+      "completeness": 0.306,
+      "conciseness": 0.973,
+      "tone": 0.992,
+      "total": 2.792
     },
     "rushed": {
-      "correctness": 0.417,
-      "completeness": 0.049,
-      "conciseness": 0.197,
-      "tone": 0.639,
-      "total": 1.302
+      "correctness": 0.406,
+      "completeness": 0.154,
+      "conciseness": 0.754,
+      "tone": 0.748,
+      "total": 2.062
     }
   },
   "dimension_separation": {
     "correctness": {
-      "mean_gap": 0.738,
-      "favours_winner_frac": 0.689
+      "mean_gap": 0.788,
+      "favours_winner_frac": 0.715
     },
     "completeness": {
-      "mean_gap": 0.157,
-      "favours_winner_frac": 0.262
+      "mean_gap": 0.181,
+      "favours_winner_frac": 0.302
     },
     "conciseness": {
-      "mean_gap": 0.605,
-      "favours_winner_frac": 0.677
+      "mean_gap": 0.491,
+      "favours_winner_frac": 0.624
     },
     "tone": {
-      "mean_gap": 0.449,
-      "favours_winner_frac": 0.613
+      "mean_gap": 0.49,
+      "favours_winner_frac": 0.61
     },
-    "_n_usable": 344,
-    "_correctness_identical_frac": 0.311,
-    "_both_incorrect_frac": 0.259
+    "_n_usable": 351,
+    "_correctness_identical_frac": 0.285,
+    "_both_incorrect_frac": 0.234
   },
   "strategy_as_chosen": {
-    "rushed": 123,
-    "grounded": 221
+    "rushed": 101,
+    "grounded": 189
   },
-  "mean_margin": 2.385,
-  "mean_chars_chosen": 606.0,
-  "mean_chars_rejected": 915.6,
-  "length_ratio_chosen_over_rejected": 0.662,
+  "mean_margin": 2.155,
+  "mean_chars_chosen": 527.2,
+  "mean_chars_rejected": 565.6,
+  "length_ratio_chosen_over_rejected": 0.932,
   "mean_candidate_chars": {
-    "grounded": 547.0,
-    "rushed": 971.4
-  }
+    "grounded": 557.3,
+    "rushed": 516.9
+  },
+  "length_balancing_applied": true,
+  "pairs_dropped_for_length": 61,
+  "hit_drop_cap": false,
+  "length_ratio_before_balancing": 0.7544,
+  "length_ratio_after_balancing": 0.9321,
+  "balance_target": [
+    0.93,
+    1.07
+  ]
 }

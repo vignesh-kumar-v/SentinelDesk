@@ -514,3 +514,45 @@ advice that destroys a customer's data on exactly the case the policy warns abou
 It is also the argument for keeping the escalation gate rule-based and independent of
 the resolution model's confidence (D6). Neither of these drafts hedges; both read as
 confident. A confidence signal derived from the model would not have caught either.
+
+## F11 — v2 preference data: the length confound is gone
+
+Phases 1-5 re-run with length-matched candidate strategies (see the v2 commit) and a
+post-judging balancing step.
+
+| | v1 | v2 |
+|---|---|---|
+| candidate mean chars, grounded / contrast | 547 / **971** | 557 / **517** |
+| length ratio chosen/rejected | **0.662** | **0.932** |
+| correctness separation (mean gap) | +0.738 | **+0.806** |
+| conciseness separation (mean gap) | +0.605 | **+0.491** |
+| order-inconsistency | 15.9% | 20.4% |
+| usable pairs | 344 | 290 |
+
+The fix worked where it was aimed. The contrast strategy is no longer verbose by
+construction — 517 chars against 971 — and correctness now separates the pairs *more*
+than conciseness does, which was the point.
+
+**A distinction the numbers make that the v1 write-up could not.** After matched
+generation the ratio was still 0.754, not 1.0: the judge kept preferring the shorter
+response *within* a pair even when the strategies produced similar lengths on average.
+That residual is not the v1 artifact. In v1 the skew came from strategy design; here it
+is the rubric's own conciseness dimension, worth 2 of 9 points, doing exactly what it
+was written to do. Concision is a legitimate quality for a support reply.
+
+Balancing then trimmed 61 pairs to bring the ratio to 0.932, inside the target band and
+without hitting the 25% drop cap. That trade is deliberate and worth naming: it
+discards some genuine signal — those 61 pairs were real preferences — to buy a cleaner
+test of whether correctness can be learned when brevity is not a free win. The
+unbalanced ratio is reported alongside, so the cost is visible.
+
+**Order-inconsistency rose from 15.9% to 20.4%.** Expected, and in the right direction:
+removing the verbosity handicap makes the two strategies closer in quality, so the
+judge has less to grip and flips more often. A judge whose consistency did not move
+when the arms converged would not be tracking quality.
+
+Also worth recording: 28.5% of usable pairs still have identical correctness on both
+sides and 23.4% have both sides at zero. That ceiling is unchanged by the length fix,
+because it is a property of a 0.5B model answering policy questions, not of how the
+candidates were prompted. If the v2 arena shows correctness still barely moving, that
+is the explanation to reach for first — and it is written down before the run.
