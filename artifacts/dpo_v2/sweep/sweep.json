@@ -66,6 +66,5 @@
       "train_margin_minus_eval_margin": -0.0876,
       "eval_loss_rose": false
     }
-  ],
-  "published_checkpoint": "artifacts/dpo_v2/checkpoint"
+  ]
 }

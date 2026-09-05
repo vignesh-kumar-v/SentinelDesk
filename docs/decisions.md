@@ -556,3 +556,37 @@ sides and 23.4% have both sides at zero. That ceiling is unchanged by the length
 because it is a property of a 0.5B model answering policy questions, not of how the
 candidates were prompted. If the v2 arena shows correctness still barely moving, that
 is the explanation to reach for first — and it is written down before the run.
+
+## F12 — Removing the confound changed the optimisation landscape, not just the metric
+
+The v2 sweep selected `lr=8e-6` — the configuration that overfitted badly in v1. Same
+learning rate, same model, same code; only the preference data differs.
+
+| | v1 at 8e-6 | v2 at 8e-6 |
+|---|---|---|
+| eval loss | 0.6919 → **0.7390 (rose)** | 0.6948 → **0.5140 (fell)** |
+| train − eval margin gap | **+1.777** | **−0.088** |
+| drift from reference | **17.17** | **2.56** |
+| eval preference accuracy | 0.588 | **0.724** |
+
+In v1 this run memorised the training pairs: the loss collapsed to 0.128, the eval loss
+went up, and the policy drifted six times as far as the winning config. In v2 the same
+setting generalises — the eval margin is *larger* than the train margin, drift is
+seven times lower, and the eval loss of 0.5140 is the best of any run across both
+versions.
+
+The explanation is the confound. With brevity correlated to preference, a high learning
+rate could drive the DPO loss down by learning "shorter is better" — a rule that is
+trivial to memorise and does not transfer to held-out tickets. With length decorrelated,
+the same learning rate has no shortcut available and has to fit something that
+generalises.
+
+This is worth more than the win-rate it produces. It says the confound was not merely
+inflating a number at the end of the pipeline; it was changing what gradient descent
+found, and a hyperparameter search run on confounded data would have drawn the wrong
+conclusion about the learning rate as well as about the model.
+
+The v2 selection is again inside the accuracy noise band (0.724 vs 0.690, SE 0.093 on
+29 validation pairs), but unlike v1 every other diagnostic points the same way: lowest
+eval loss, largest eval margin, no eval-loss regression, negative train-eval gap. The
+rule and the diagnostics agree, so there is no conflict to report this time.
